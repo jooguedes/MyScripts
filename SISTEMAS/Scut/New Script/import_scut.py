@@ -41,6 +41,7 @@ python import_ixc.py --settings=sgp.local.settings --empresas=scut-empresas.csv.
 python import_ixc.py --settings=sgp.local.settings --empresas=scut-empresas.csv.utf8
 python import_ixc.py --settings=sgp.local.settings --empresas=scut-empresas.csv.utf8
 python import_ixc.py --settings=sgp.local.settings --empresas=scut-empresas.csv.utf8
+python import_ixc.py --settings=sgp.local.settings --empresas=scut-empresas.csv.utf8
 '''
 
 args = parser.parse_args()
