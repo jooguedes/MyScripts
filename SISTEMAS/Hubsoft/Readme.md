@@ -1,0 +1,10 @@
+## Autor: Gileno
+## Data: 05-05-2023
+#DADOS IMPORTADOS:
+ - Clientes
+ - Notas fiscais
+ - planos
+ - Ocorrencias
+ - Titulos
+
+# PODE OCORRER ALGUM PROBLEMA COM A TABELA CLIENTE ENDERECO_NUMERO TALVEZ SEJA PRECISO USAR UM sed PARA SUBSTITUIR O NOME DO SCHEMA.

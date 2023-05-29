@@ -1,0 +1,187 @@
+SELECT id,
+       descricao,
+       vel_down,
+       vel_up,
+       valor,
+       codigo
+FROM plano 
+INTO OUTFILE '/tmp/lfadmin-planos.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+-- USAR SHA-Password NO settings.py 
+
+SELECT c.id,
+       cob.contrato_id,
+       c.nome_razao_social,
+       c.nome_fantasia,
+       COALESCE(c.rg,c.ie) as rg_ie,
+       c.tipo_pessoa,
+       c.sexo,
+       c.data_nascimento,
+       c.nacionalidade,
+       c.estado_civil,
+       c.ocupacao_atividade,
+       COALESCE(cpf,cnpj) as cpfcnpj,
+       CONCAT(l1.tipo,' ',l1.logradouro) as logradouro,
+       c.numero,
+       c.complemento,
+       b1.bairro,
+       c1.cidade,
+       c.estado_uf,
+       c.cep,
+       '' as referencia,
+       (select contato from attr_contato where cadastro_id=c.id and tipo='CELULAR' limit 1) as celular,
+       (select contato from attr_contato where cadastro_id=c.id and tipo='CASA' limit 1) as telefone,
+       (select contato from attr_contato where cadastro_id=c.id and tipo='EMAIL' limit 1) as email,
+       (select anotacao from cadastro_anotacao where cadastro_id=c.id limit 1) as observacao,
+       '' as nomepai,
+       '' as nomemae,
+       c.info,
+       c.situacao,
+       u.situacao,
+       u.usuario,
+       u.senha,
+       u.ip,
+       u.mac,
+       p.id,
+       cob.conta_id,
+       cob.vencimento,
+       c.responsavel_legal,
+       '' as im,
+       c.data_cadastro,
+       c.data_ativacao,
+       u.id as idservico,
+       CASE WHEN c.usar_end_cobranca = 1 THEN CONCAT(l2.tipo,' ',l2.logradouro) ELSE CONCAT(l1.tipo,' ',l1.logradouro) END as cob_logradouro,
+       CASE WHEN c.usar_end_cobranca = 1 THEN c.numero_cobranca ELSE c.numero END as cob_numero,
+       CASE WHEN c.usar_end_cobranca = 1 THEN c.complemento_cobranca ELSE c.complemento END as cob_complemento,
+       CASE WHEN c.usar_end_cobranca = 1 THEN b2.bairro ELSE b1.bairro END as cob_bairro,
+       CASE WHEN c.usar_end_cobranca = 1 THEN c2.cidade ELSE c1.cidade END as cob_cidade,
+       CASE WHEN c.usar_end_cobranca = 1 THEN c.estado_cobranca ELSE c.estado_uf END as cob_uf,
+       CASE WHEN c.usar_end_cobranca = 1 THEN c.cep_cobranca ELSE c.cep END as cob_cep,
+       '' as cob_referencia,
+       CONCAT(l3.tipo,' ',l3.logradouro) as servico_logradouro,
+       u.numero as servico_numero,
+       u.complemento as servico_complemento,
+       b3.bairro as servico_bairro,
+       c3.cidade as servico_cidade,
+       u.estado_uf as servico_uf,
+       u.cep as servico_cep,
+       '' as servico_referencia,
+       c.latitude,
+       c.longitude
+
+from cadastro c 
+INNER JOIN conta_cobranca cob on (cob.cadastro_id=c.id)
+INNER JOIN usuario u on (u.id=c.usuario_id)
+INNER JOIN plano p on (p.id=cob.plano_id)
+
+LEFT JOIN endereco_logradouro l1 on (l1.id=c.logradouro_id)
+LEFT JOIN endereco_bairro b1 ON (b1.id=c.bairro_id)
+LEFT JOIN endereco_cidade c1 ON (c1.id=c.cidade_id)
+
+LEFT JOIN endereco_logradouro l2 on (l2.id=c.logradouro_cobranca_id)
+LEFT JOIN endereco_bairro b2 ON (b2.id=c.bairro_cobranca_id)
+LEFT JOIN endereco_cidade c2 ON (c2.id=c.cidade_cobranca_id)
+
+LEFT JOIN endereco_logradouro l3 on (l3.id=u.logradouro_id)
+LEFT JOIN endereco_bairro b3 ON (b3.id=u.bairro_id)
+LEFT JOIN endereco_cidade c3 ON (c3.id=u.cidade_id)
+INTO OUTFILE '/tmp/lfadmin-clientes.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select
+       r.cadastro_id,
+       cob.contrato_id,
+       r.conta_id,
+       r.conta_id,
+       r.id as nosso_numero,
+       r.id,
+       r.parcela,
+       r.valor,
+       '' as obs,
+       r.recebido,
+       r.pagamento,
+       r.emissao,
+       r.vencimento,
+       1, #r.data_cancelamento 
+       1, #r.status
+       r.conta_id,
+       r.id,
+       '' as link,
+       r.desconto as desconto
+
+from conta_credito r
+INNER JOIN conta_cobranca cob on (cob.id=r.conta_cobranca_id)
+INTO OUTFILE '/tmp/lfadmin-titulos.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+#AND c.filial_id=20
+
+select
+       r.cadastro_id,
+       cob.contrato_id,
+       r.conta_id,
+       r.conta_id,
+       r.id as nosso_numero,
+       r.id,
+       r.parcela,
+       r.valor,
+       r.descricao,
+       r.recebido,
+       r.pagamento,
+       r.emissao,
+       r.vencimento,
+       r.alteracao,
+       1,#r.status,
+       r.conta_id,
+       bf.codigo,
+       bf.link_boleto,
+       r.desconto as desconto,
+       bf.status
+
+from conta_credito r
+INNER JOIN conta_cobranca cob on (cob.id=r.conta_cobranca_id)
+INNER JOIN financeira_boletofacil_transacao bf on (bf.conta_credito_id=r.id)
+
+WHERE liberado='S' and (tipo_renegociacao IS NULL OR tipo_renegociacao != 'R')
+
+INTO OUTFILE '/tmp/lfadmin-titulos.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+#AND c.filial_id=20
+
+
+select
+       r.id_cliente,
+       r.id_contrato,
+       r.id_conta,
+       r.id_carteira_cobranca,
+       r.id as nosso_numero,
+       r.documento,
+       r.nparcela,
+       r.valor,
+       r.obs,
+       m.credito as valor_pago,
+       m.data as data_pagamento,
+       r.data_emissao,
+       r.data_vencimento,
+       r.data_cancelamento,
+       r.status,
+       r.id_carteira_cobranca,
+       r.nn_boleto,
+       r.gateway_link,
+       m.vdesconto as desconto
+
+from fn_areceber r 
+INNER JOIN cliente c ON (c.id=r.id_cliente)
+INNER JOIN fn_carteira_cobranca carteira ON (carteira.id=r.id_carteira_cobranca)
+LEFT OUTER JOIN fn_movim_finan m on (m.id_receber=r.id and m.credito > 0.00)
+WHERE liberado='S' and (tipo_renegociacao IS NULL OR tipo_renegociacao != 'R')
+
+INTO OUTFILE '/tmp/lfadmin-titulos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+#AND c.filial_id=20
+
+
+
+select * from financeira_boletofacil \G
+select * from financeira_gerencianet \G
+select * from financeira_widepay \G
+
+
+
+

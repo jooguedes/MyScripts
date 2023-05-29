@@ -1,0 +1,45 @@
+import csv 
+from apps.financeiro import models as fmodels
+from apps.admcore import models 
+from decimal import Decimal
+from apps.cauth import models as authmodels 
+usuario = authmodels.User.objects.get(username='sgp')
+
+with open('/opt/fidelidade.csv', 'rb') as csvfile:
+    conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
+    for row in conteudo:
+        print row
+        if row[0] in ['7739']:
+            continue 
+        cobranca = fmodels.Cobranca.objects.filter(clientecontrato__id=row[0],fidelidade__isnull=True)
+        if cobranca:
+            if '%' in row[2]:
+                planovalor = cobranca[0].clientecontrato.servicointernet_set.all()[0].planointernet.plano.preco
+                valor = (planovalor * Decimal(row[2].replace('%',''))) / 100
+                
+            else:
+                valor = Decimal(row[2].replace(',','.'))
+            fidelidade = models.Fidelidade.objects.filter(desconto=valor)
+            if fidelidade:
+                cobranca[0].fidelidade=fidelidade[0]
+                cobranca[0].save()
+                print(cobranca,fidelidade[0].desconto)
+
+
+
+
+from apps.financeiro import models as fmodels
+from apps.admcore import models 
+from decimal import Decimal 
+for c in fmodels.Cobranca.objects.filter(fidelidade__isnull=True):
+    t = c.titulo_set.filter(centrodecusto__in=fmodels.CentrodeCusto.getMensalidades()).order_by('-data_vencimento')[:1]
+    if t:
+        planovalor = c.clientecontrato.servicointernet_set.all()[0].planointernet.plano.preco
+        valor_filter = planovalor - t[0].valor
+        if valor_filter > Decimal('0.00'):
+            fidelidade = models.Fidelidade.objects.filter(desconto=valor_filter)
+            if fidelidade:
+                print(c.clientecontrato.id,c.cliente.getNome(),planovalor,t[0].valor,fidelidade[0])
+                c.fidelidade=fidelidade[0]
+                c.save()
+  

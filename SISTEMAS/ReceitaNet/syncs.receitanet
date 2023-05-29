@@ -1,0 +1,2 @@
+python import_receitanet.py --settings=sgp.netlivego.settings --nas=1 --pop=1 --clientes=Conv-clientes.csv
+python import_receitanet.py --settings=sgp.netlivego.settings --nas=1 --pop=1 --portador=1 --loginsplanos=Conv-mensalidades.csv  --sync=1

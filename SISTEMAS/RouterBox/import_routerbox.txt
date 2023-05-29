@@ -1,0 +1,135 @@
++----------+
+| situacao |
++----------+
+| A        |
+| B        |
+| C        |
+| E        |
+| N        |
+| S        |
++----------+
+
+select 
+	c.Codigo as Cliente,
+	cc.Numero as Contrato,
+	cu.Usuario,
+	c.Tipo,
+	c.Nome,
+	c.CNPJ_CNPF,
+	c.RG_IE,
+	c.Nascimento,
+	c.Endereco,
+	c.Numero,
+	c.Complemento,
+	c.Bairro,
+	c.CEP,
+	c.UF,
+	c.Cidade,
+	c.TelCelular,
+	c.TelComercial,
+	c.Email,
+	c.Observacoes,
+	c.Inclusao,
+	c.DiaCobr,
+	cc.Desconto,
+	'' as acrescimo,
+    '' as comodato,
+    case when c.Cobranca = 'S' then 'N' else 'S' end as isento,
+    c.Situacao,
+    cu.Usuario,
+    cu.Senha,
+    cu.Mac,
+	'' as servidor,
+	'' as ip,
+	p.Descricao,
+	p.Valor,
+    p.Velocidade as download,
+    p.VelocidadeUP as upload,
+    p.Valor,
+	10 as planoaviso,
+	15 as planobloqueio,
+    c.TelComercial,
+    cu.Usuario,
+    cu.Senha,
+    c.Cobr_EndInst_Contr,
+	c.Cobr_Endereco,
+	c.Cobr_Numero,
+	c.Cobr_Bairro,
+	c.Cobr_Cidade,
+	c.Cobr_CEP,      
+	c.Cobr_UF,
+	c.Cobr_Complemento,
+	'' as nomepai,
+	'' as nomemae,
+	'' as naturalidade,
+	c.MapsLat,        
+	c.MapsLng,
+	c.usuario as Cadastrou       
+from Clientes c 
+inner join Contratos cc on (cc.Cliente = c.Codigo)
+inner join Planos p on (p.Codigo=cc.Plano)
+inner join ClientesUsuarios cu on (cu.Cliente = c.Codigo and cc.Numero=cu.Contrato)
+WHERE cu.Usuario != c.CNPJ_CNPF
+INTO OUTFILE '/tmp/routerbox-clientes.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select * from Convenios \G;
+
+MariaDB [wconect]> select Convenio from Convenios \G;
+*************************** 1. row ***************************
+Convenio: 123
+*************************** 2. row ***************************
+Convenio: 2288779
+*************************** 3. row ***************************
+Convenio: 2959590
+*************************** 4. row ***************************
+Convenio: 8305544
+*************************** 5. row ***************************
+Convenio: 5116101
+
+select
+	   m.Cliente,
+	   mc.Contrato,
+	   m.Conta,
+	   m.Convenio,
+	   m.NroBanco,
+	   m.Documento,
+	   1, 
+       m.Valor,
+       m.DescVenc,
+       m.Complemento,
+       m.Valor-m.BxDesconto as ValorPago,
+       m.BxDesconto,
+       m.DataBaixa,
+       m.DataLancto,
+       m.Data,
+       m.Estornado,
+       m.DataEst,
+       m.JustEst,
+       m.usuario
+
+from Movimento m 
+INNER JOIN Convenios c on (m.Convenio=c.Convenio)
+LEFT JOIN MovimentoContrato mc on (m.sequencia=mc.sequencia)
+WHERE c.id=6
+INTO OUTFILE '/tmp/routerbox-titulos-id-6-gerencianet' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select * from _Integracao_Gerencianet \G;
+
+select
+       m.Documento,
+       g.Charge_id,
+       g.Barcode,
+       g.Link,
+       g.Status,
+       g.Carnet_parcel,
+       g.CarneId,
+       g.NotificationUrl
+from Movimento m 
+inner join _Integracao_Gerencianet_Transaction g on (g.MovSeq=m.Sequencia)
+INTO OUTFILE '/tmp/routerbox-titulos-gerencianet.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+
+

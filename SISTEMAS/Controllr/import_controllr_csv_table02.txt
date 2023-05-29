@@ -1,0 +1,57 @@
+echo "" > create
+echo "create table controllr.client(" >> create
+head -n 1 controllr.client.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.client_phone(" >> create
+head -n 1 controllr.client_phone.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table public.client_email(" >> create
+head -n 1 public.client_email.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.addresses(" >> create
+head -n 1 controllr.addresses.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.contract(" >> create; 
+head -n 1 controllr.contract.csv | sed "s/;/ text,/g" >> create 
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.invoice(" >> create
+head -n 1 controllr.invoice.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table radius.sessions(" >> create
+head -n 1 radius.sessions.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+
+echo "create table aaa_cpe(" >> create
+head -n 1 public.aaa_cpe.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+
+echo "create table aaa_plan(" >> create
+head -n 1 public.aaa_plan.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+
+
+for i in controllr.client.csv controllr.addresses.csv controllr.client_phone.csv public.client_email.csv controllr.contract.csv public.aaa_cpe.csv controllr.invoice.csv public.aaa_plan.csv radius.sessions.csv; do cp $i /tmp; done 
+
+psql -U postgres -h localhost -d NOME_DO_BANCO -f create 
+psql -U postgres -h localhost -d NOME_DO_BANCO 
+
+COPY controllr.client FROM '/tmp/controllr.client.csv' DELIMITER ';' CSV;
+COPY controllr.addresses FROM '/tmp/controllr.addresses.csv' DELIMITER ';' CSV;
+COPY controllr.client_phone FROM '/tmp/controllr.client_phone.csv' DELIMITER ';' CSV;
+COPY public.client_email FROM '/tmp/public.client_email.csv' DELIMITER ';' CSV;
+COPY controllr.contract FROM '/tmp/controllr.contract.csv' DELIMITER ';' CSV;
+COPY controllr.network_cpe FROM '/tmp/controllr.network_cpe.csv' DELIMITER ';' CSV;
+COPY controllr.invoice FROM '/tmp/controllr.invoice.csv' DELIMITER ';' CSV;
+COPY controllr.radius_plans FROM '/tmp/controllr.radius_plans.csv' DELIMITER ';' CSV;
+COPY public.aaa_cpe FROM '/tmp/public.aaa_cpe.csv' DELIMITER ';' CSV;
+COPY public.aaa_plan FROM '/tmp/public.aaa_plan.csv' DELIMITER ';' CSV;
+COPY radius.sessions FROM '/tmp/radius.sessions.csv' DELIMITER ';' CSV;

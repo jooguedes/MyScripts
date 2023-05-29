@@ -1,0 +1,366 @@
+# mar/07/2022 01:00:05 by RouterOS 6.48.6
+# software id = PV3I-AUF0
+#
+# model = RouterBOARD 750G r3
+# serial number = 8AFF0979FFEA
+/interface bridge
+add name=loopback
+/interface ethernet
+set [ find default-name=ether1 ] comment="CHEGADA DE LINK" speed=100Mbps
+set [ find default-name=ether2 ] comment=ARAPARI speed=100Mbps
+set [ find default-name=ether3 ] comment="BARRO VERMELHO" speed=100Mbps
+set [ find default-name=ether4 ] comment=ROTEADOR speed=100Mbps
+set [ find default-name=ether5 ] comment="VILA PANTANAL" speed=100Mbps
+/interface vlan
+add interface=ether2 name=V150-TORRE-2 vlan-id=150
+add interface=ether1 name="vlan102-BORDA - LAN HOUSE" vlan-id=102
+/ip dhcp-server
+add interface=ether5 name=dhcp1
+/ip pool
+add comment=ispfy name=bloqueado ranges=100.64.244.0/22
+add comment=ispfy name=reducao ranges=100.64.248.0/22
+add comment="POOL PPPoE" name=PPPoE-CGNAT ranges=100.64.2.0/24
+/ppp profile
+add name=INTERNET_002_MB rate-limit=2M/2M
+add name=INTERNET_005_MB rate-limit=5M/5M
+add name=INTERNET_010_MB rate-limit=10M/10M
+add name=INTERNET_015_MB rate-limit=15M/15M
+add name=INTERNET_025_MB rate-limit=25M/25M
+add address-list=blocking name=Blocking rate-limit=100k/100k
+add address-list=pending name=INTERNET_005_MB.pending rate-limit=5120k/5120k
+add comment=ispfy-vpn name="VPN-ISPFY (NAO ALTERAR)"
+add change-tcp-mss=yes comment="PROFILE - PPPoE" dns-server=8.8.8.8,1.1.1.1 \
+    local-address=100.64.64.1 name=PPPoE-CGNAT only-one=yes remote-address=\
+    PPPoE-CGNAT use-compression=no use-encryption=no use-mpls=no use-upnp=no
+add comment=ispfy-rescue dns-server=8.8.8.8,1.1.1.1 name=15000K/15000K \
+    rate-limit=15000K/15000K
+add comment=ispfy-rescue dns-server=8.8.8.8,1.1.1.1 name=10000K/10000K \
+    rate-limit=10000K/10000K
+/interface l2tp-client
+add comment=ispfy-vpn connect-to=34.73.107.225 disabled=no name=\
+    "VPN-ISPFY-L2TP (NAO ALTERAR)" password=fca16081805 profile=\
+    "VPN-ISPFY (NAO ALTERAR)" user=PowerNetBC
+/queue simple
+add max-limit=100M/100M name=FS target=172.25.200.2/32
+/queue type
+add kind=pcq name=REDUCAO-UP-ISPFY pcq-classifier=src-address \
+    pcq-dst-address6-mask=64 pcq-rate=256k pcq-src-address6-mask=64
+add kind=pcq name=REDUCAO-DW-ISPFY pcq-classifier=dst-address \
+    pcq-dst-address6-mask=64 pcq-rate=256k pcq-src-address6-mask=64
+/queue tree
+add comment=*Regra_ReceitaNet max-limit=20M name=*Regra_ReceitaNet-IN \
+    packet-mark=MARK-ReceitaNet parent=global priority=1 queue=default
+add comment=*Regra_ReceitaNet max-limit=20M name=*Regra_ReceitaNet-OUT \
+    packet-mark=MARK-ReceitaNet parent=global priority=1 queue=default
+add name=REDUCAO-DW-ISPFY packet-mark=REDUCAO-DW-ISPFY parent=global queue=\
+    REDUCAO-DW-ISPFY
+add name=REDUCAO-UP-ISPFY packet-mark=REDUCAO-UP-ISPFY parent=global queue=\
+    REDUCAO-UP-ISPFY
+/routing bgp instance
+set default client-to-client-reflection=no redistribute-connected=yes \
+    redistribute-static=yes router-id=192.168.99.2
+/routing ospf instance
+set [ find default=yes ] name=RTR-BNG-FAIZA redistribute-connected=as-type-1 \
+    router-id=10.206.220.6
+/snmp community
+set [ find default=yes ] name=MonitorZabbix
+/system logging action
+set 0 memory-lines=100
+set 1 disk-file-name=log disk-lines-per-file=100
+add disk-file-count=2000 disk-file-name=rn_log_auth disk-lines-per-file=8 \
+    name=rnauth target=disk
+add name=BeesWeb remote=52.203.18.39 remote-port=33333 target=remote
+/user group
+set full policy="local,telnet,ssh,ftp,reboot,read,write,policy,test,winbox,pas\
+    sword,web,sniff,sensitive,api,romon,dude,tikapp"
+/ip firewall connection tracking
+set enabled=no loose-tcp-tracking=no
+/ip neighbor discovery-settings
+set discover-interface-list=!dynamic
+/interface pppoe-server server
+add authentication=pap,chap default-profile=PPPoE-CGNAT disabled=no \
+    interface=V150-TORRE-2 service-name=service1
+add authentication=pap,chap default-profile=PPPoE-CGNAT disabled=no \
+    interface=ether2 service-name=service2
+add authentication=pap,chap default-profile=PPPoE-CGNAT disabled=no \
+    interface=ether3 service-name=service3
+add authentication=pap,chap default-profile=PPPoE-CGNAT disabled=no \
+    interface=ether4 service-name=service4
+add authentication=pap,chap default-profile=PPPoE-CGNAT disabled=no \
+    interface=ether5 service-name=service5
+/ip address
+add address=10.206.140.42/29 interface=ether1 network=10.206.140.40
+add address=10.206.220.6 interface=loopback network=10.206.220.6
+add address=10.206.140.121/29 interface=ether2 network=10.206.140.120
+add address=10.206.140.137/29 interface=V150-TORRE-2 network=10.206.140.136
+add address=10.10.11.2/30 comment="PTP BORDA PPPoE LAN HOUSE" interface=\
+    "vlan102-BORDA - LAN HOUSE" network=10.10.11.0
+add address=192.168.99.2 comment="IP DE ACESSO" interface=loopback network=\
+    192.168.99.2
+/ip cloud
+set ddns-enabled=yes
+/ip dhcp-client
+add disabled=no interface=ether1 use-peer-dns=no
+/ip dhcp-server network
+add address=10.0.20.0/24 gateway=10.0.20.1
+add address=192.168.200.0/24 gateway=192.168.200.103
+/ip dns
+set servers=8.8.8.8,8.8.4.4
+/ip route
+add check-gateway=ping distance=1 gateway=10.10.11.1
+/ip service
+set telnet disabled=yes
+set ftp port=2221
+set www port=8008
+set ssh port=2202
+set api address=0.0.0.0/0
+set api-ssl disabled=yes
+/ppp aaa
+set interim-update=10m use-radius=yes
+/ppp secret
+add disabled=yes name=josefrancisco password=123456 profile=INTERNET_005_MB \
+    service=pppoe
+add comment="REGIVAN ARAUJO ALVES" disabled=yes name=fazendaboavista \
+    password=123456 profile=INTERNET_005_MB service=pppoe
+add comment="REGIVAN ARAUJO ALVES" disabled=yes name=regivan password=123456 \
+    profile=INTERNET_005_MB service=pppoe
+add disabled=yes name=BASE password=123456 service=pppoe
+add comment=ispfy-rescue disabled=yes name=iranildemartins password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=gilbertopelegrin password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=JOAOVITAL password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=iransedefaiza password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=RIVELINO password=1234 profile=\
+    10000K/10000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=SEUNENEM password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=CLEONICESILVA password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=joaoaraujo password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=RAIMUNDOSILVA password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=sandovalsousa password=123456 \
+    profile=10000K/10000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=EDISONLOPES password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=CLEITONMORAES password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=ANTONIODEOLIVEIRA password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=MATEUSMOTA password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=mariatemoteo password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=VERONICAGOMES password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=raimundodasilva password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=werle password=123456 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=silvanapereira password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=RAIMUNDOARAUJO password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=joseconceicao password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=RAIMUNDOLOPES password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=franciscavieira password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=FABIO password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=alexbarbosa password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=jovianarodrigues password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=mariadelurdes password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=gisrelrego password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=JARDELREGO password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=ANTONIOELDO password=1234 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=ALINECONCEICAO password=1234 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=paulosecundo password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=mariareis password=123456 profile=\
+    15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=marcosantonio password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=beneditosantos password=123456 \
+    profile=15000K/15000K service=pppoe
+add comment=ispfy-rescue disabled=yes name=joaquimbarbosa password=123456 \
+    profile=15000K/15000K service=pppoe
+add name=Power password=123456 service=pppoe
+/radius
+add address=192.0.0.1 comment=ispfy secret=b22289cbc26dae90 service=\
+    ppp,hotspot,dhcp src-address=192.0.0.3 timeout=3s
+/radius incoming
+set accept=yes
+/routing bfd interface
+set [ find default=yes ] disabled=yes
+/routing bgp peer
+add hold-time=30s name=peer1 remote-address=10.10.11.1 remote-as=65530 ttl=\
+    default update-source="vlan102-BORDA - LAN HOUSE"
+/routing filter
+add action=discard chain=ospf-in prefix=!0.0.0.0/0 protocol=ospf
+/snmp
+set enabled=yes
+/system clock
+set time-zone-name=America/Sao_Paulo
+/system identity
+set name=RB3011-POWERNET-FAIZA-CON03
+/system logging
+add action=rnauth topics=ppp,account
+add action=rnauth disabled=yes topics=warning,script
+add action=BeesWeb prefix=\
+    "998 Pe6KEAQXVYkORSbBoJ5rFMPSrL2VJZXh7w3L94X2c1ibYz1rHm6hrlmNIMQEuLqM" \
+    topics=hotspot,account
+add action=BeesWeb prefix=\
+    "999 Pe6KEAQXVYkORSbBoJ5rFMPSrL2VJZXh7w3L94X2c1ibYz1rHm6hrlmNIMQEuLqM" \
+    topics=pppoe,ppp,info,account
+/system ntp client
+set enabled=yes primary-ntp=200.160.0.8 secondary-ntp=200.189.40.8
+/system package update
+set channel=long-term
+/system resource irq rps
+set ether1 disabled=no
+set ether2 disabled=no
+set ether3 disabled=no
+set ether4 disabled=no
+set ether5 disabled=no
+/system scheduler
+add comment=ReceitaNet interval=1m name=rn-log_auth on-event="[:parse \"\\3A\\\
+    67\\6C\\6F\\62\\61\\6C\\20\\74\\69\\6D\\65\\73\\20\\64\\6F\\3D\\7B\\3A\\6C\
+    \\6F\\63\\61\\6C\\20\\75\\3B\\3A\\73\\65\\74\\20\\24\\75\\20\\5B\\2F\\73\\\
+    79\\73\\74\\65\\6D\\20\\72\\65\\73\\6F\\75\\72\\63\\65\\20\\67\\65\\74\\20\
+    \\75\\70\\74\\69\\6D\\65\\5D\\3B\\3A\\6C\\6F\\63\\61\\6C\\20\\74\\3B\\3A\\\
+    69\\66\\20\\28\\5B\\3A\\66\\69\\6E\\64\\20\\24\\75\\20\\22\\77\\22\\20\\2D\
+    \\31\\5D\\20\\3E\\20\\30\\29\\20\\64\\6F\\3D\\7B\\3A\\73\\65\\74\\20\\24\\\
+    70\\20\\28\\5B\\3A\\66\\69\\6E\\64\\20\\24\\75\\20\\22\\77\\22\\20\\2D\\31\
+    \\5D\\29\\3B\\3A\\73\\65\\74\\20\\24\\74\\20\\28\\24\\74\\20\\2B\\20\\28\\\
+    5B\\3A\\70\\69\\63\\6B\\20\\24\\75\\20\\30\\20\\24\\70\\5D\\29\\20\\2A\\20\
+    \\37\\29\\3B\\3A\\73\\65\\74\\20\\24\\75\\20\\5B\\3A\\70\\69\\63\\6B\\20\\\
+    24\\75\\20\\28\\24\\70\\20\\2B\\20\\31\\29\\20\\5B\\3A\\6C\\65\\6E\\20\\24\
+    \\75\\5D\\5D\\3B\\7D\\3B\\3A\\69\\66\\20\\28\\5B\\3A\\66\\69\\6E\\64\\20\\\
+    24\\75\\20\\22\\64\\22\\20\\2D\\31\\5D\\20\\3E\\20\\30\\29\\20\\64\\6F\\3D\
+    \\7B\\3A\\73\\65\\74\\20\\24\\70\\20\\28\\5B\\3A\\66\\69\\6E\\64\\20\\24\\\
+    75\\20\\22\\64\\22\\20\\2D\\31\\5D\\29\\3B\\3A\\73\\65\\74\\20\\24\\74\\20\
+    \\28\\28\\24\\74\\20\\2B\\20\\28\\5B\\3A\\70\\69\\63\\6B\\20\\24\\75\\20\\\
+    30\\20\\24\\70\\5D\\29\\29\\20\\2A\\20\\38\\36\\34\\30\\30\\29\\3B\\3A\\73\
+    \\65\\74\\20\\24\\75\\20\\5B\\3A\\70\\69\\63\\6B\\20\\24\\75\\20\\28\\24\\\
+    70\\20\\2B\\20\\31\\29\\20\\5B\\3A\\6C\\65\\6E\\20\\24\\75\\5D\\5D\\3B\\7D\
+    \\3B\\3A\\73\\65\\74\\20\\24\\74\\20\\28\\24\\74\\20\\2B\\20\\28\\5B\\3A\\\
+    70\\69\\63\\6B\\20\\24\\75\\20\\30\\20\\32\\5D\\20\\2A\\20\\36\\30\\20\\2A\
+    \\20\\36\\30\\29\\29\\3B\\3A\\73\\65\\74\\20\\24\\74\\20\\28\\24\\74\\20\\\
+    2B\\20\\28\\5B\\3A\\70\\69\\63\\6B\\20\\24\\75\\20\\33\\20\\35\\5D\\20\\2A\
+    \\20\\36\\30\\29\\29\\3B\\3A\\73\\65\\74\\20\\24\\74\\20\\28\\24\\74\\20\\\
+    2B\\20\\5B\\3A\\70\\69\\63\\6B\\20\\24\\75\\20\\36\\20\\38\\5D\\29\\3B\\3A\
+    \\72\\65\\74\\75\\72\\6E\\20\\24\\74\\20\\7D\\3B\\3A\\67\\6C\\6F\\62\\61\\\
+    6C\\20\\72\\6E\\6C\\6F\\67\\61\\75\\74\\68\\3B\\3A\\69\\66\\20\\28\\24\\72\
+    \\6E\\6C\\6F\\67\\61\\75\\74\\68\\20\\3C\\20\\28\\5B\\24\\74\\69\\6D\\65\\\
+    73\\5D\\20\\2D\\20\\36\\30\\30\\29\\29\\20\\64\\6F\\3D\\7B\\3A\\64\\6F\\20\
+    \\7B\\3A\\77\\68\\69\\6C\\65\\20\\28\\5B\\3A\\6C\\65\\6E\\20\\5B\\2F\\66\\\
+    69\\6C\\65\\20\\66\\69\\6E\\64\\20\\77\\68\\65\\72\\65\\20\\6E\\61\\6D\\65\
+    \\7E\\22\\72\\6E\\5F\\6C\\6F\\67\\5F\\61\\75\\74\\68\\2E\\22\\20\\26\\26\\\
+    20\\6E\\61\\6D\\65\\21\\3D\\22\\72\\6E\\5F\\6C\\6F\\67\\5F\\61\\75\\74\\68\
+    \\2E\\30\\2E\\74\\78\\74\\22\\5D\\5D\\20\\3E\\20\\30\\29\\20\\64\\6F\\3D\\\
+    7B\\3A\\6C\\6F\\63\\61\\6C\\20\\6C\\69\\73\\74\\20\\5B\\2F\\66\\69\\6C\\65\
+    \\20\\66\\69\\6E\\64\\20\\77\\68\\65\\72\\65\\20\\6E\\61\\6D\\65\\7E\\22\\\
+    72\\6E\\5F\\6C\\6F\\67\\5F\\61\\75\\74\\68\\2E\\22\\20\\26\\26\\20\\6E\\61\
+    \\6D\\65\\21\\3D\\22\\72\\6E\\5F\\6C\\6F\\67\\5F\\61\\75\\74\\68\\2E\\30\\\
+    2E\\74\\78\\74\\22\\5D\\3B\\3A\\67\\6C\\6F\\62\\61\\6C\\20\\72\\6E\\6C\\6F\
+    \\67\\61\\75\\74\\68\\20\\5B\\24\\74\\69\\6D\\65\\73\\5D\\3B\\3A\\6C\\6F\\\
+    63\\61\\6C\\20\\63\\6F\\6E\\74\\65\\6E\\74\\20\\22\\22\\3B\\3A\\6C\\6F\\63\
+    \\61\\6C\\20\\66\\69\\6C\\65\\73\\20\\22\\22\\3B\\3A\\66\\6F\\72\\65\\61\\\
+    63\\68\\20\\69\\20\\69\\6E\\3D\\5B\\3A\\70\\69\\63\\6B\\20\\24\\6C\\69\\73\
+    \\74\\20\\30\\20\\31\\30\\5D\\20\\64\\6F\\3D\\7B\\3A\\73\\65\\74\\20\\24\\\
+    63\\6F\\6E\\74\\65\\6E\\74\\20\\28\\24\\63\\6F\\6E\\74\\65\\6E\\74\\20\\2E\
+    \\20\\5B\\2F\\66\\69\\6C\\65\\20\\67\\65\\74\\20\\6E\\75\\6D\\62\\65\\72\\\
+    3D\\24\\69\\20\\63\\6F\\6E\\74\\65\\6E\\74\\73\\5D\\29\\3B\\3A\\73\\65\\74\
+    \\20\\24\\66\\69\\6C\\65\\73\\20\\28\\24\\66\\69\\6C\\65\\73\\20\\2E\\20\\\
+    24\\69\\20\\2E\\20\\22\\2C\\22\\29\\3B\\7D\\3B\\2F\\74\\6F\\6F\\6C\\20\\66\
+    \\65\\74\\63\\68\\20\\68\\74\\74\\70\\2D\\6D\\65\\74\\68\\6F\\64\\3D\\70\\\
+    6F\\73\\74\\20\\68\\74\\74\\70\\2D\\64\\61\\74\\61\\3D\\22\\74\\6F\\6B\\65\
+    \\6E\\3D\\34\\33\\37\\62\\34\\63\\32\\35\\2D\\39\\35\\65\\61\\2D\\34\\62\\\
+    39\\65\\2D\\39\\30\\38\\63\\2D\\30\\66\\61\\39\\36\\36\\62\\33\\39\\32\\63\
+    \\64\\26\\61\\70\\70\\3D\\6D\\69\\6B\\72\\6F\\74\\69\\6B\\26\\63\\6F\\6E\\\
+    74\\65\\6E\\74\\3D\\24\\63\\6F\\6E\\74\\65\\6E\\74\\22\\20\\75\\72\\6C\\3D\
+    \\22\\68\\74\\74\\70\\73\\3A\\2F\\2F\\73\\69\\73\\74\\65\\6D\\61\\2E\\72\\\
+    65\\63\\65\\69\\74\\61\\6E\\65\\74\\2E\\6E\\65\\74\\2F\\61\\70\\69\\2F\\6E\
+    \\6F\\76\\6F\\2F\\6D\\69\\6B\\72\\6F\\74\\69\\6B\\2F\\6C\\6F\\67\\2F\\61\\\
+    75\\74\\68\\22\\20\\6B\\65\\65\\70\\2D\\72\\65\\73\\75\\6C\\74\\3D\\6E\\6F\
+    \\3B\\3A\\66\\6F\\72\\65\\61\\63\\68\\20\\69\\20\\69\\6E\\3D\\5B\\3A\\74\\\
+    6F\\61\\72\\72\\61\\79\\20\\24\\66\\69\\6C\\65\\73\\5D\\20\\64\\6F\\3D\\7B\
+    \\2F\\66\\69\\6C\\65\\20\\72\\65\\6D\\6F\\76\\65\\20\\6E\\75\\6D\\62\\65\\\
+    72\\3D\\24\\69\\3B\\7D\\3B\\7D\\3B\\3A\\67\\6C\\6F\\62\\61\\6C\\20\\72\\6E\
+    \\6C\\6F\\67\\61\\75\\74\\68\\20\\30\\3B\\7D\\20\\6F\\6E\\2D\\65\\72\\72\\\
+    6F\\72\\3D\\7B\\3A\\69\\66\\20\\28\\5B\\3A\\6C\\65\\6E\\20\\24\\6C\\69\\73\
+    \\74\\5D\\20\\3E\\20\\35\\30\\29\\20\\64\\6F\\3D\\7B\\3A\\6C\\6F\\67\\20\\\
+    65\\72\\72\\6F\\72\\20\\22\\46\\61\\76\\6F\\72\\20\\61\\62\\72\\61\\20\\6F\
+    \\20\\6E\\65\\77\\20\\74\\65\\72\\6D\\69\\6E\\61\\6C\\20\\65\\20\\70\\69\\\
+    6E\\67\\20\\70\\61\\72\\61\\20\\73\\69\\73\\74\\65\\6D\\61\\2E\\72\\65\\63\
+    \\65\\69\\74\\61\\6E\\65\\74\\2E\\6E\\65\\74\\20\\63\\61\\73\\6F\\20\\4E\\\
+    41\\4F\\20\\65\\73\\74\\65\\6A\\61\\20\\70\\69\\6E\\67\\61\\6E\\64\\6F\\20\
+    \\72\\65\\76\\65\\6A\\61\\20\\61\\73\\20\\63\\6F\\6E\\66\\69\\67\\75\\72\\\
+    61\\63\\6F\\65\\73\\20\\64\\65\\20\\73\\65\\75\\20\\6D\\69\\6B\\72\\6F\\74\
+    \\69\\6B\\2E\\20\\43\\61\\73\\6F\\20\\65\\73\\74\\65\\6A\\61\\20\\70\\69\\\
+    6E\\67\\61\\6E\\64\\6F\\20\\53\\49\\4D\\2C\\20\\65\\6E\\74\\72\\65\\20\\65\
+    \\6D\\20\\63\\6F\\6E\\74\\61\\74\\6F\\20\\63\\6F\\6D\\20\\61\\20\\65\\71\\\
+    75\\69\\70\\65\\20\\64\\65\\20\\73\\75\\70\\6F\\72\\74\\65\\20\\64\\6F\\20\
+    \\52\\65\\63\\65\\69\\74\\61\\4E\\65\\74\\22\\3B\\7D\\3B\\7D\\20\\7D\"]]" \
+    policy=ftp,read,write,policy,test start-date=aug/10/2021 start-time=\
+    17:53:52
+add comment=ReceitaNet interval=1d name=RN-REBOOT-REINICIAR on-event="[:parse \
+    \"\\20\\2F\\70\\70\\70\\20\\61\\63\\74\\69\\76\\65\\20\\72\\65\\6D\\6F\\76\
+    \\65\\20\\5B\\66\\69\\6E\\64\\5D\\3B\\2F\\73\\79\\73\\74\\65\\6D\\20\\70\\\
+    61\\63\\6B\\61\\67\\65\\3B\\3A\\64\\65\\6C\\61\\79\\20\\33\\30\\3B\\3A\\64\
+    \\6F\\20\\7B\\75\\70\\64\\61\\74\\65\\20\\73\\65\\74\\20\\63\\68\\61\\6E\\\
+    6E\\65\\6C\\3D\\22\\62\\75\\67\\66\\69\\78\\22\\3B\\7D\\20\\6F\\6E\\2D\\65\
+    \\72\\72\\6F\\72\\3D\\7B\\7D\\3B\\3A\\64\\6F\\20\\7B\\75\\70\\64\\61\\74\\\
+    65\\20\\73\\65\\74\\20\\63\\68\\61\\6E\\6E\\65\\6C\\3D\\22\\6C\\6F\\6E\\67\
+    \\2D\\74\\65\\72\\6D\\22\\3B\\7D\\20\\6F\\6E\\2D\\65\\72\\72\\6F\\72\\3D\\\
+    7B\\7D\\3B\\3A\\64\\6F\\20\\7B\\75\\70\\64\\61\\74\\65\\20\\69\\6E\\73\\74\
+    \\61\\6C\\6C\\3B\\7D\\20\\6F\\6E\\2D\\65\\72\\72\\6F\\72\\3D\\7B\\7D\\3B\\\
+    3A\\69\\66\\20\\28\\2F\\73\\79\\73\\74\\65\\6D\\20\\72\\6F\\75\\74\\65\\72\
+    \\62\\6F\\61\\72\\64\\20\\67\\65\\74\\20\\72\\6F\\75\\74\\65\\72\\62\\6F\\\
+    61\\72\\64\\29\\20\\64\\6F\\3D\\7B\\2F\\73\\79\\73\\74\\65\\6D\\20\\72\\6F\
+    \\75\\74\\65\\72\\62\\6F\\61\\72\\64\\20\\75\\70\\67\\72\\61\\64\\65\\3B\\\
+    7D\\3B\\2F\\73\\79\\73\\74\\65\\6D\\20\\72\\65\\62\\6F\\6F\\74\\3B\"]]" \
+    policy=reboot,read,write,policy,test,password,sniff,sensitive start-date=\
+    jan/01/2000 start-time=05:00:00
+add comment=ReceitaNet interval=1d name=RECEITANET-AcessoRemoto on-event="[:pa\
+    rse \"\\20\\2F\\69\\70\\20\\66\\69\\72\\65\\77\\61\\6C\\6C\\20\\6E\\61\\74\
+    \\20\\72\\65\\6D\\6F\\76\\65\\20\\5B\\66\\69\\6E\\64\\20\\63\\6F\\6D\\6D\\\
+    65\\6E\\74\\3D\\22\\52\\65\\67\\72\\61\\5F\\52\\65\\63\\65\\69\\74\\61\\4E\
+    \\65\\74\\2D\\41\\63\\65\\73\\73\\6F\\52\\65\\6D\\6F\\74\\6F\\45\\78\\74\\\
+    65\\72\\6E\\6F\\22\\5D\\20\"]]" policy=\
+    ftp,reboot,read,write,policy,test,password,sniff,sensitive,romon \
+    start-date=jan/01/1970 start-time=01:00:00
+add comment=ispfy-rescue interval=1d name=ISPFY-BAIXA-SECRETS-FAILOVER \
+    on-event="/tool fetch url=\"https://192.0.0.1:8043/api/tool/mikrotik/scrip\
+    t/secrets\?key=192.0.0.3\" check-certificate=no http-method=get http-heade\
+    r-field=\"token:a5a10311461e55dbc1177e49de3c6ae9\" as-value output=file ds\
+    t-path=ispfy-rescue.rsc; import ispfy-rescue.rsc; :log info \"Download scr\
+    ipt de emergencia com sucesso\"; " policy=read,write,test start-date=\
+    dec/14/2021 start-time=14:54:08
+/tool graphing interface
+add
+/tool graphing resource
+add
+/tool netwatch
+add comment=ReceitaNet host=172.31.148.254
+add comment=ispfy-rescue down-script="/ppp secret enable [find comment=\"ispfy\
+    -rescue\"]; :log info \"Habilitando secrets\";" host=192.0.0.1 interval=\
+    10m up-script="/ppp secret disable [find comment=\"ispfy-rescue\"]; :log i\
+    nfo \"Desabilitando secrets\";"
+/tool romon
+set enabled=yes
+/user aaa
+set use-radius=yes

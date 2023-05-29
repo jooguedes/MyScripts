@@ -1,0 +1,34 @@
+"1"|"HomeFast"|"Internet banda Larga"|"29.90"|"Acesso a Internet HomeFast/OfficeFast"|"bandalarga"|"2MB/2MB"
+"21"|"Ramal SIP"|"Ramal SIP"|"0.00"|"Ramal SIP"|"telefonia"|
+"33"|"HomeFast 2Mbps"|"Internet Banda Larga 2Mbps"|"49.90"|"Acesso a Internet HomeFast/OfficeFast"|"bandalarga"|"3MB/3MB"
+"34"|"HomeFast 5Mbps"|"Internet Banda Larga 5Mbps"|"59.90"|"Acesso a Internet HomeFast/OfficeFast"|"bandalarga"|"6MB/6MB"
+"38"|"HomeFast 10M"|"Internet HomeFast com velocidade de 10M"|"79.90"|"Acesso a Internet HomeFast/OfficeFast"|"bandalarga"|"11MB/5MB"
+"49"|"HomeFast 10M+Telefone Ilimitado Fixo/FIxo"|"Internet HomeFast com velocidade de 10M e Telefone Fixo ilimitado de Fixo para Fixo"|"109.90"|"Acesso a Internet HomeFast/OfficeFast"|"bandalarga"|"11MB/5MB"
+"50"|"HomeFast 30M+Telefone Ilimitado Fixo/FIxo"|"Internet HomeFast com velocidade de 30M e Telefone Fixo ilimitado de Fixo para Fixo"|"109.90"|"Acesso a Internet HomeFast/OfficeFast"|"bandalarga"|"33MB/11MB"
+"51"|"R2FIBRA 50M"|"Internet R2FIBRA com velocidade de 50M e Telefone Fixo ilimitado de Fixo para Fixo"|"89.9"|"R2FIBRA 50M"|"bandalarga"|"55MB/17MB"
+"52"|"R2FIBRA 100M"|"Internet R2FIBRA com velocidade de 100M e Telefone Fixo ilimitado de Fixo para Fixo"|"89.9"|"R2FIBRA 100M"|"bandalarga"|"110MB/33MB"
+"55"|"R2FIBRA 300M"|"Internet R2FIBRA com velocidade de 300M "|"109.9"|"R2FIBRA 300M"|"bandalarga"|"330MB/99MB"
+"56"|"R2Fibra 500M+Telefone Ilimitado Brasil"|"Internet HomeFast com velocidade de 500M e Telefone Fixo ilimitado de Fixo para Fixo"|"129.90"|"R2Fibra 500M+Telefone Ilimitado Brasil"|"bandalarga"|"550MB/165MB"
+"62"|"PABX Virtual"|"PABX Virtual "|"200.00"|"PABX Virtual"|"telefonia"|
+"63"|"R2FIBRA 100M+50%up"|"Internet R2FIBRA com velocidade de 100M e Telefone Fixo ilimitado de Fixo para Fixo e upload 50%"|"149.9"|"R2FIBRA 100M+50%UP"|"bandalarga"|"110MB/55MB"
+"64"|"R2 FIBRA 300M+Telefone Brasil+50%UP"|"Internet R2FIBRA com velocidade de 300M e Telefone Fixo ilimitado Brasil e 50% upload"|"108.90"|"R2FIBRA 300M + Telefone Brasil + 50%UP"|"bandalarga"|"330MB/165MB"
+"65"|"R2FIBRA 500M+Telefone Brasil+50%UP"|"Internet R2FIBRA com velocidade de 500M e Telefone Fixo Brasil + 50%UP"|"149.8"|"R2FIBRA 500M + Telefone Brasil + 50%UP "|"bandalarga"|"550MB/275MB"
+"66"|"R2FIBRA 700M+Telefone Brasil"|"Internet HomeFast com velocidade de 700M e Telefone Fixo ilimitado Brasil"|"179.9"|"R2FIBRA 700M + Telefone Brasil"|"bandalarga"|"770M/233M"
+"67"|"R2FIBRA 700M+Telefone Brasil+50%UP"|"Internet R2FIBRA com velocidade de 700M e Telefone Fixo ilimitado Brasil + 50% UP"|"189.8"|"R2FIBRA 700M + Telefone Brasil + 50%UP "|"bandalarga"|"770MB/385MB"
+"80"|"R2FIBRA 500M+Telefone Brasil no combo TV "|"Internet HomeFast com velocidade de 500M e Telefone Fixo ilimitado Brasil"|"100"|"R2FIBRA 500M+Telefone Brasil no combo TV"|"bandalarga"|"550MB/165MB"
+"81"|"R2FIBRA 700M+Telefone Brasil no combo TV"|"Internet HomeFast com velocidade de 700M e Telefone Fixo ilimitado Brasil"|"140"|"R2FIBRA 700M+Telefone Brasil no combo TV"|"bandalarga"|"770M/233M"
+"82"|"Telefone Cortesia Ilimitado Brasil"|"Telefone Cortesia Ilimitado Brasil"|"0.00"|"Telefone Cortesia Ilimitado Brasil"|"telefonia"|
+"83"|"Ramal SIP Tarifado"|"Ramal SIP Tarifado"|"9.90"|"Ramal SIP Tarifado"|"telefonia"|
+"84"|"Ramal SIP Ilimitado Brasil"|"Ramal SIP Ilimitado Brasil"|"29.90"|"Ramal SIP Ilimitado brasil"|"telefonia"|
+"87"|"Telefone Cortesia Tarifado"|"Telefone Cortesia Tarifado"|"0.00"|"Telefone Cortesia Tarifado"|"telefonia"|
+"88"|"Telefone  Cortesia Ilimitado Brasil Fixo"|"Telefone Cortesia Ilimitado Brasil Fixo"|"0.00"|"Telefone Cortesia Ilimitado Brasil Fixo"|"telefonia"|
+"89"|"Assinatura Numero Publico GTGI"|"Assinatura Numero Publico GTGI"|"25.00"|"Numero Publico Portado"|"telefonia"|
+"90"|"Desconto Banda larga - 10 "||"10.00"|"Desconto Banda larga - 10 "|"bandalarga"|
+"92"|"Desconto Telefonia"||"25.00"|"Desconto Link Dedicado"|"telefonia"|
+"95"|"Desconto Banda larga - 20 "||"20.00"|"Desconto Banda larga - 20 "|"bandalarga"|
+"96"|"Desconto Banda larga - 30"||"30.00"|"Desconto Banda larga - 30"|"bandalarga"|
+"97"|"Desconto Banda larga - 40"||"40.00"|"Desconto Banda larga - 40"|"bandalarga"|
+"98"|"Desconto Banda larga - 50"||"50.00"|"Desconto Banda larga - 50"|"bandalarga"|
+"99"|"Desconto Banda larga - 60"||"60.00"|"Desconto Banda larga - 60"|"bandalarga"|
+"106"|"R2FIBRA 500M+50%UP+Telefone Brasil no combo TV "|"Internet HomeFast com velocidade de 500M com 50%UP e Telefone Fixo ilimitado Brasil"|"109.9"|"R2FIBRA 500M+50%UP+Telefone Brasil no co"|"bandalarga"|"550MB/275MB"
+"108"|"R2FIBRA 700M+50%UP+Telefone Brasil no combo TV"|"Internet HomeFast com velocidade de 700M com 50%UP e Telefone Fixo ilimitado Brasil"|"149.9"|"R2FIBRA 700M+50%UP+Telefone Brasil no co"|"bandalarga"|"770MB/385MB"

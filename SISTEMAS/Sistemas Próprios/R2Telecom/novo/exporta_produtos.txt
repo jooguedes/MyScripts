@@ -1,0 +1,90 @@
+cod_produto|nome_produto|descricao_produto|valor_produto|descricao_boleto_produto|tipo_produto|velocidade
+1|HomeFast|Internet banda Larga|29.90|Acesso a Internet HomeFast/OfficeFast|bandalarga|2MB/2MB
+3|Hospedagem PHP|Plano  de Hospedagem PHP com direito a webmail, redireciomanto, listas de discocao  e 30 contas de email|29.90|Plano de Hospedagem PHP|hospedagem|
+6|Hospedagem Basico|Plano basico de hospedagem com 10MB de espaco e 20 contas de email|9.90|Plano de Hospedagem Basico|hospedagem|
+7|Hospedagem ASP|Plano Profissional ASP de hospedagem com 50MB de espaco e 30 contas de email|29.90|Plano de Hospedagem ASP|hospedagem|
+10|IP 64Kbps|Link Dedicado 64Kbps|400.00|Conexao dedicada internet de 64Kbps|dedicado|
+11|IP 128 Kbps|Link dedicado 128Kbps|400.00|Conexao dedicada internet de 128Kbps|dedicado|
+12|IP 256 Kbps|Link dedicado 256Kbps|250.00|Conexao dedicada internet de 64Kbps|dedicado|
+13|IP 512 Kbps|Link Dedicado 512Kbps|480.00|Conexao dedicada internet de 512Kbps|dedicado|
+14|IP 1 Mbps|Link Dedicado velocidade de 1Mbps|980.00|Conexao dedicada internet de 1Mbps|dedicado|
+15|IP 2Mbps|Link Dedicado 2Mbps|1680.00|Conexao dedicada internet de 2Mbps|dedicado|
+21|Ramal SIP|Ramal SIP|0.00|Ramal SIP|telefonia|
+25|IP 8Mb|Link dedicado 8Mbps|8000.00|Conexao dedicada internet de 8Mbps|dedicado|
+26|IP 4Mbps|Link dedicado 4 Mbps|4000.00|Conexao dedicada internet de 4Mbps|dedicado|
+33|HomeFast 2Mbps|Internet Banda Larga 2Mbps|49.90|Acesso a Internet HomeFast/OfficeFast|bandalarga|3MB/3MB
+34|HomeFast 5Mbps|Internet Banda Larga 5Mbps|59.90|Acesso a Internet HomeFast/OfficeFast|bandalarga|6MB/6MB
+35|IP 10Mbps|Link Dedicado 10Mbps|480.00|Conexao  dedicada internet de 10Mbps|dedicado|11MB/11MB
+36|IP 16Mbps|Link dedicado 16Mbps|4500.00|Conexao dedicada internet 16Mbps|dedicado|
+37|IP 20Mbps|Link dedicado 20Mbps|680.00|Conexao  dedicada internet de 20Mbps|dedicado|22MB/22MB
+38|HomeFast 10M|Internet HomeFast com velocidade de 10M|79.90|Acesso a Internet HomeFast/OfficeFast|bandalarga|11MB/5MB
+39|SMS Pessoal ilimitado|SMS Pessoal Ilimitado|10.00|Pacote SMS pessoal Ilimitado|sms|
+40|SMS 2.000|SMS 2.000 mensagens|200.00|pacote SMS 2000 mensagens|sms|
+41|SMS 10000|SMS 10.000 mensagens|500.00|Pacote sms 10.000 mensagens|sms|
+42|SMS pessoal Ilimitado+Portabilidade|SMS pessoal ilimitado com pacote de portabilidade|160.00||sms|
+43|SMS 2000 + portabilidade|SMS 2.000 mensagens com pacote portabilidade|350.00|Pacote SMS 2000 + Portabilidade|sms|
+44|SMS 10000 + Portabilidade|SMS 10.000 mensagens com pacote Portabilidade|650.00|Pacote SMS 10000 + portabilidade|sms|
+45|IP 20Mbps|Link dedicado 20Mbps|680.00||dedicado|
+46|IP 50Mbps|Link dedicado 50Mbps|780.00|Conexao dedicada internet 50Mbps|dedicado|55MB/55MB
+47|IP 5Mbps|Link dedicado 5Mbps|680.00||dedicado|
+48|IP 100Mbps|Link dedicado 100Mbps|990.00|Conexao dedicada internet 100Mbps|dedicado|110MB/110MB
+49|HomeFast 10M+Telefone Ilimitado Fixo/FIxo|Internet HomeFast com velocidade de 10M e Telefone Fixo ilimitado de Fixo para Fixo|109.90|Acesso a Internet HomeFast/OfficeFast|bandalarga|11MB/5MB
+50|HomeFast 30M+Telefone Ilimitado Fixo/FIxo|Internet HomeFast com velocidade de 30M e Telefone Fixo ilimitado de Fixo para Fixo|109.90|Acesso a Internet HomeFast/OfficeFast|bandalarga|33MB/11MB
+51|R2FIBRA 50M|Internet R2FIBRA com velocidade de 50M e Telefone Fixo ilimitado de Fixo para Fixo|79.90|R2FIBRA 50M|bandalarga|55MB/17MB
+52|R2FIBRA 100M|Internet R2FIBRA com velocidade de 100M e Telefone Fixo ilimitado de Fixo para Fixo|79.90|R2FIBRA 100M|bandalarga|110MB/33MB
+53|IP 30Mbps|Link dedicado 30Mbps|680.00|Conexao dedicada internet 30Mbps|dedicado|33MB/33MB
+54|IP 200Mbps|Link Dedicado 200Mbps
+|1680.00|Link Dedicado 200Mbps|dedicado|220MB/220MB
+55|R2FIBRA 300M|Internet R2FIBRA com velocidade de 300M |99.90|R2FIBRA 300M|bandalarga|330MB/99MB
+56|R2Fibra 500M+Telefone Ilimitado Brasil|Internet HomeFast com velocidade de 500M e Telefone Fixo ilimitado de Fixo para Fixo|129.90|R2Fibra 500M+Telefone Ilimitado Brasil|bandalarga|550MB/165MB
+57|Plano WIFI Toda Casa|Plano WIFI Toda Casa|9.90|Plano WIFI Toda Casa|sva|
+58|DNS Firewall Banda Larga|DNS Firewall Banda Larga|9.90|DNS Firewall Banda Larga|sva|
+59|DNS Firewall Link Dedicado|DNS Firewall Link Dedicado|99.00|DNS Firewall Link Dedicado|dedicado|
+60|IP Fixo - Valido|IP Fixo - Valido |50.00|IP Fixo - Valido|sva|
+61|VPN|VPN - Link Ponto a Ponto|980.00|VPN - Link Ponto a Ponto|dedicado|
+62|PABX Virtual|PABX Virtual |200.00|PABX Virtual|telefonia|
+63|R2FIBRA 100M+50%up|Internet R2FIBRA com velocidade de 100M e Telefone Fixo ilimitado de Fixo para Fixo e upload 50%|139.90|R2FIBRA 100M+50%UP|bandalarga|110MB/55MB
+64|R2 FIBRA 300M+Telefone Brasil+50%UP|Internet R2FIBRA com velocidade de 300M e Telefone Fixo ilimitado Brasil e 50% upload|108.90|R2FIBRA 300M + Telefone Brasil + 50%UP|bandalarga|330MB/165MB
+65|R2FIBRA 500M+Telefone Brasil+50%UP|Internet R2FIBRA com velocidade de 500M e Telefone Fixo Brasil + 50%UP|139.80|R2FIBRA 500M + Telefone Brasil + 50%UP |bandalarga|550MB/275MB
+66|R2FIBRA 700M+Telefone Brasil|Internet HomeFast com velocidade de 700M e Telefone Fixo ilimitado Brasil|169.90|R2FIBRA 700M + Telefone Brasil|bandalarga|770M/233M
+67|R2FIBRA 700M+Telefone Brasil+50%UP|Internet R2FIBRA com velocidade de 700M e Telefone Fixo ilimitado Brasil + 50% UP|179.80|R2FIBRA 700M + Telefone Brasil + 50%UP |bandalarga|770MB/385MB
+68|Taxa Administracao Brasilia Shopping|Taxa cobrada pela administracao|100.00|Taxa Administracao Brasilia Shopping|sva|
+550MB/550MB|IP 500Mbps|Link Dedicado 500Mbps
+|3280.00|Link Dedicado 500Mbps|dedicado|
+70|PlaymaisTV SmartMini |PlaymaisTV SmartMini 40 Canais|49.90|PlaymaisTV SmartMini |sva|
+71|PlaymaisTV SmartTotal |PlaymaisTV SmartTotal 100 canais|69.90|PlaymaisTV SmartTotal|sva|
+72|Primevideo 1 ano Gratis|Primevideo 1 ano gratis|-8.90|PrimeVideo 1 ano Gratis|sva|
+73|Deezer|Deezer|9.90|Deezer |sva|
+74|Paramount+ / Noggin / WatchBrasil|Paramount+ / Noggin / WatchBrasil|9.90|Paramount+ / Noggin / WatchBrasil|sva|
+75|Looke Video|Looke Video|9.90||sva|
+76|Copa Nordeste|Copa Nordeste|9.90|Copa Nordeste |sva|
+77|Campeonato Paulista||9.90|Campeonato Paulista|sva|
+78|Deezer|Deezer 1 ano gratis|9.90|Deezer 1 ano gratis|sva|
+80|R2FIBRA 500M+Telefone Brasil no combo TV |Internet HomeFast com velocidade de 500M e Telefone Fixo ilimitado Brasil|90.00|R2FIBRA 500M+Telefone Brasil no combo TV|bandalarga|550MB/165MB
+81|R2FIBRA 700M+Telefone Brasil no combo TV|Internet HomeFast com velocidade de 700M e Telefone Fixo ilimitado Brasil|130.00|R2FIBRA 700M+Telefone Brasil no combo TV|bandalarga|770M/233M
+82|Telefone Cortesia Ilimitado Brasil|Telefone Cortesia Ilimitado Brasil|0.00|Telefone Cortesia Ilimitado Brasil|telefonia|
+83|Ramal SIP Tarifado|Ramal SIP Tarifado|9.90|Ramal SIP Tarifado|telefonia|
+84|Ramal SIP Ilimitado Brasil|Ramal SIP Ilimitado Brasil|29.90|Ramal SIP Ilimitado brasil|telefonia|
+85|Ponto Extra - PlaymaisTV SmartMini|Ponto Extra - PlaymaisTV SmartMini 50 Canais |14.90|Ponto Extra - PlaymaisTV SmartMini|sva|
+86|Ponto Extra - PlaymaisTV SmartTotal|Ponto Extra - PlaymaisTV SmartTotal 100 Canais |24.90|Ponto Extra - PlaymaisTV SmartTotal|sva|
+87|Telefone Cortesia Tarifado|Telefone Cortesia Tarifado|0.00|Telefone Cortesia Tarifado|telefonia|
+88|Telefone  Cortesia Ilimitado Brasil Fixo|Telefone Cortesia Ilimitado Brasil Fixo|0.00|Telefone Cortesia Ilimitado Brasil Fixo|telefonia|
+89|Assinatura Numero Publico GTGI|Assinatura Numero Publico GTGI|25.00|Numero Publico Portado|telefonia|
+90|Desconto Banda larga - 10 ||10.00|Desconto Banda larga - 10 |bandalarga|
+91|Desconto Link Dedicado||0.00|Desconto Link Dedicado|dedicado|
+92|Desconto Telefonia||25.00|Desconto Link Dedicado|telefonia|
+93|IP 300M|Link Dedicado 300Mbps|2190.00|Link Dedicado 300Mbps|dedicado|330MB/330MB
+94|IP 1G|Link Dedicado 1Gbps|6280.00|Link Dedicado 1Gbps|dedicado|1100MB/1100MB
+95|Desconto Banda larga - 20 ||20.00|Desconto Banda larga - 20 |bandalarga|
+96|Desconto Banda larga - 30||30.00|Desconto Banda larga - 30|bandalarga|
+97|Desconto Banda larga - 40||40.00|Desconto Banda larga - 40|bandalarga|
+98|Desconto Banda larga - 50||50.00|Desconto Banda larga - 50|bandalarga|
+99|Desconto Banda larga - 60||60.00|Desconto Banda larga - 60|bandalarga|
+100|Desconto Link Dedicado - 50||50.00|Desconto Link Dedicado - 50|dedicado|
+101|Desconto Link Dedicado - 100||100.00|Desconto Link Dedicado - 100|dedicado|
+102|Desconto Link Dedicado - 200||200.00|Desconto Link Dedicado - 200|dedicado|
+103|Desconto Link Dedicado - 300||300.00|Desconto Link Dedicado - 300|dedicado|
+104|Desconto Link Dedicado - 400||400.00|Desconto Link Dedicado - 400|dedicado|
+105|Desconto Link Dedicado - 500||500.00|Desconto Link Dedicado - 500|dedicado|
+106|R2FIBRA 500M+50%UP+Telefone Brasil no combo TV |Internet HomeFast com velocidade de 500M com 50%UP e Telefone Fixo ilimitado Brasil|99.90|R2FIBRA 500M+50%UP+Telefone Brasil no co|bandalarga|550MB/275MB
+108|R2FIBRA 700M+50%UP+Telefone Brasil no combo TV|Internet HomeFast com velocidade de 700M com 50%UP e Telefone Fixo ilimitado Brasil|139.90|R2FIBRA 700M+50%UP+Telefone Brasil no co|bandalarga|770MB/385MB

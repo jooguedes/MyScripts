@@ -1,0 +1,151 @@
+SELECT
+B.ID_BOLETO,
+BC.DESCRICAO,
+B.BANCO_BOLETO,
+B.AGENCIA_BANCO,
+B.DV_AGENCIA_BANCO,
+B.CONTA_BANCO,
+B.DV_CONTA_BANCO,
+B.CONVENIO_BANCO,
+B.VARIACAO_CARTEIRA_BANCO,
+'PROVEDOR' AS CEDENTE,
+'DS' AS ESPECIE_DOC,
+B.CLIENT_ID,
+B.SECRET_ID,
+B.URL_NOTIFICACAO
+from BOLETO B
+inner join BANCO BC on (BC.COD_BANCO = B.BANCO_BOLETO)
+INTO OUTFILE '/tmp/altarede-portadores.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select 
+COD_PLANO,                
+NOME,
+VEL_DOWNLOAD,
+VEL_UPLOAD,
+VALOR_MENSAL,
+NOME_RADIUS
+FROM PLANOS
+INTO OUTFILE '/tmp/altarede-planos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+SELECT       
+c.CODIGO,  
+cc.CODIGO,               
+c.NOME,
+c.NOME as FANTASIA,
+c.IDENTIDADE,
+'',
+c.SEXO,
+c.DATA_NASCIMENTO,
+c.NATURALIDADE,
+c.ESTADO_CIVIL,
+c.PROFISSAO,
+c.CPF,
+c.LOGRADOURO,
+c.ENDERECO,
+c.COMPLEMENTO,
+c.BAIRRO,
+c.CIDADE,
+c.ESTADO, 
+c.CEP,
+'' as REFERENCIA,
+c.TELEFONE_CELULAR1   ,   
+c.TELEFONE_CELULAR2  ,
+c.EMAIL1,
+c.PAI,
+c.MAE,
+c.OBS,
+c.ATIVO,
+'' AS STATUS,
+cc.LOGIN,
+cc.SENHA,
+cc.IP,
+cc.MAC,
+cc.COD_PLANO,
+1,
+cc.DIA_VENCIMENTO,
+'' as RESPONSAVEL,
+'' as IM,
+c.DATA_CADASTRO,
+c.DATA_CADASTRO,
+'' as IDSERVICO,
+c.LOGRADOURO,
+c.ENDERECO,
+c.COMPLEMENTO,
+c.BAIRRO,
+c.CIDADE,
+c.ESTADO, 
+c.CEP,
+'' as REFERENCIA,
+c.LOGRADOURO,
+c.ENDERECO,
+c.COMPLEMENTO,
+c.BAIRRO,
+c.CIDADE,
+c.ESTADO, 
+c.CEP,
+'' as REFERENCIA,
+c.LATITUDE,               
+c.LONGITUDE, 
+c.DATA_EMISSAO_IDENTIDADE,
+c.ORGAO_EMISSOR,
+c.SENHA_WEB,
+p.NOME as POP,
+tc.NOME as STATUS,
+tc.COD_TIPOCLIENTE as STATUS_ID
+
+FROM CLIENTE c
+INNER JOIN TIPOCLIENTE tc ON (tc.COD_TIPOCLIENTE=c.COD_TIPOCLIENTE)
+INNER JOIN PROVEDOR_GERAL cc on (c.COD_CLIENTE=cc.COD_CLIENTE)
+LEFT JOIN PRACACOBRANCA p ON (p.COD_PRACACOBRANCA=c.COD_PRACACOBRANCA)
+WHERE c.COD_TIPOCLIENTE in (1,2,3,8)
+INTO OUTFILE '/tmp/altarede-clientes.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+SELECT 
+p.CODIGO,
+p.COD_CLIENTE,
+p.COD_PLANO,
+p.LOGIN,
+p.SENHA,
+p.IP,
+p.MAC,
+p.USUARIO_INSTALACAO,
+p.DATA_INSTALACAO,
+p.DIA_VENCIMENTO
+FROM PROVEDOR_GERAL p
+INNER JOIN CLIENTE c on (c.COD_CLIENTE=p.COD_CLIENTE)
+WHERE c.COD_TIPOCLIENTE in (1,2,3,8)
+INTO OUTFILE '/tmp/altarede-contratos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+
+select 
+radacctid            ,
+acctsessionid        ,
+acctuniqueid         ,
+username             ,
+realm                ,
+nasipaddress         ,
+nasportid            ,
+nasporttype          ,
+acctstarttime        ,
+AcctUpdateTime       ,
+acctstoptime         ,
+acctsessiontime      ,
+acctauthentic        ,
+connectinfo_start    ,
+connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+servicetype          ,
+framedprotocol       ,
+framedipaddress      ,
+null as framedipv6prefix     ,
+null as delegatedipv6prefix  
+from radacct
+INTO OUTFILE '/tmp/altarede-radacct.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+

@@ -1,0 +1,89 @@
+cat /etc/freeradius/3.0/mods-enabled/sql
+
+server = "127.0.0.1" 
+    port = 3306
+    login = "root"
+ password = "woofa1408" 
+    radius_db = "ixcprovedor"
+
+
+
+    server = "127.0.0.1" 
+    port = 3306
+    login = "root"
+ password = "1090R5612" 
+    radius_db = "ixcprovedor"
+
+
+
+
+sql ixcsoft_sql {
+	driver = "rlm_sql_mysql"
+    dialect = "mysql"
+server = "127.0.0.1" 
+    port = 3306
+    login = "root"
+ password = "MK03iN4OC8ws" 
+    radius_db = "ixcprovedor"
+
+
+
+
+    sql ixcsoft_sql {
+	driver = "rlm_sql_mysql"
+    dialect = "mysql"
+    server = "localhost"
+    port = 3306
+    login = "root"
+password = "dXSiEwd68f3UBATTRG2j"
+    radius_db = "ixcprovedor"
+
+
+
+server="127.0.0.1"
+    port = 3306
+    login = "root"
+    password="SyNprOMfgzPN0qV4FOtU"
+    radius_db = "ixcprovedor"
+
+sql ixcsoft_sql {
+	driver = "rlm_sql_mysql"
+    dialect = "mysql"
+    server="127.0.0.1"
+    port = 3306
+    login = "root"
+    password="so1E2aEEc5upJJLV"
+    radius_db = "ixcprovedor"
+
+
+
+login = "root"
+    password="s5KK0gs0fN1g6yp03M"
+    radius_db = "ixcprovedor"
+
+
+
+
+
+
+    sql ixcsoft_sql {
+	driver = "rlm_sql_mysql"
+    dialect = "mysql"
+server = "127.0.0.1" 
+    port = 3306
+    login = "root"
+ password = "I7FqWoh2DGIiloxy" 
+    radius_db = "ixcprovedor"
+
+
+
+#ATUAL
+sql ixcsoft_sql {
+	driver = "rlm_sql_mysql"
+    dialect = "mysql"
+    server="127.0.0.1"
+    port = 3306
+    login = "root"
+    password="LS0noz1TLpE0TA3AUXA5c"
+    radius_db = "ixcprovedor"
+

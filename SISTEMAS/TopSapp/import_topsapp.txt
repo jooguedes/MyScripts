@@ -1,0 +1,516 @@
+COPY (
+SELECT 
+tc.id,
+tsca.usuario,
+tc.pessoa,
+tc.nome,
+1,
+tc.cpf,
+case when tp.corte > 0 then tp.corte else 15 end as diascorte,
+case when tp.corte > 0 then tp.corte else 15 end as diascorte,
+tc.rg,
+'' as profissao,
+tc.sexo,
+tc.data_nascimento,
+tc.fantasia,
+'' as contato,
+tc.endereco,
+tc.numero,
+tc.complemento,
+tc.bairro,
+tc.cep,
+tc.uf,
+cid.cidade,
+tc.celular,
+tc.telefone,
+tc.email,
+tsc.observacoes,
+ tc.data_cadastro,
+ tc.data_cadastro,
+ '' as grupo,
+ '' as nas,
+ts.descricao as plano, 
+ts.valor as plano_valor, 
+'' as conntipo,
+tsca.ip,
+tsca.ip,
+tsca.mac,
+tv.dia,
+tsc.desconto,
+tsc.acrescimo,
+'' as transmissor,
+'' as receptor,
+'nao' as comodato,
+case when tsc.gerar_fatura = false then  'sim' else 'nao' end as isento,
+case when tc.estado = 'desativado' then 'desativado' else tsc.status end as status,
+tsca.senha,
+tp.download,
+tp.upload,
+tsc.data as servicodata,
+tsc.data_bloqueio,
+tsc.data_desativacao,
+tc.pai,
+tc.mae,
+tc.natural_cidade,
+tc.natural_estado,
+tc.insc_estadual,
+tc.insc_municipal,
+tc.observacoes,
+tc.senhacentral,
+tc.observacoes_tecnica,
+tsc.id
+FROM topsapp.clientes tc 
+INNER JOIN topsapp.cidades cid on (cid.id=tc.cidade)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id) 
+INNER JOIN topsapp.servicos ts on (ts.id=tsc.servico_id)
+INNER JOIN topsapp.planos tp ON (tp.id_servico=ts.id)
+INNER JOIN topsapp.vencimentos tv ON (tv.id = tsc.vencimento_id) where tsc.status != 'desativado') TO '/tmp/topsapp-clientes.csv' DELIMITER '|' CSV;
+
+COPY (
+SELECT 
+tc.id,
+tsca.usuario,
+tc.pessoa,
+tc.nome,
+1,
+tc.cpf,
+case when tp.corte > 0 then tp.corte else 15 end as diascorte,
+case when tp.corte > 0 then tp.corte else 15 end as diascorte,
+tc.rg,
+'' as profissao,
+tc.sexo,
+tc.data_nascimento,
+tc.fantasia,
+'' as contato,
+tc.endereco,
+tc.numero,
+tc.complemento,
+tc.bairro,
+tc.cep,
+tc.uf,
+cid.cidade,
+tc.celular,
+tc.telefone,
+tc.email,
+tsc.observacoes,
+ tc.data_cadastro,
+ tc.data_cadastro,
+ '' as grupo,
+ '' as nas,
+ts.descricao as plano, 
+ts.valor as plano_valor, 
+'' as conntipo,
+tsca.ip,
+tsca.ip,
+tsca.mac,
+tv.dia,
+tsc.desconto,
+tsc.acrescimo,
+'' as transmissor,
+'' as receptor,
+'nao' as comodato,
+case when tsc.gerar_fatura = false then  'sim' else 'nao' end as isento,
+case when tc.estado = 'desativado' then 'desativado' else tsc.status end as status,
+tsca.senha,
+tp.download,
+tp.upload,
+tsc.data as servicodata,
+tsc.data_bloqueio,
+tsc.data_desativacao,
+tc.pai,
+tc.mae,
+tc.natural_cidade,
+tc.natural_estado,
+tc.insc_estadual,
+tc.insc_municipal,
+tc.observacoes,
+tc.senhacentral,
+tc.observacoes_tecnica,
+tsc.id
+FROM topsapp.clientes tc 
+INNER JOIN topsapp.cidades cid on (cid.id=tc.cidade)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id) 
+INNER JOIN topsapp.servicos ts on (ts.id=tsc.servico_id)
+INNER JOIN topsapp.planos tp ON (tp.id_servico=ts.id)
+INNER JOIN topsapp.vencimentos tv ON (tv.id = tsc.vencimento_id) where tsc.status = 'desativado') TO '/tmp/topsapp-clientes-desativados.csv' DELIMITER '|' CSV;
+
+COPY (
+select 
+tc.id,
+tc.nome,
+tsc.id,
+tsca.usuario,
+tscat.latitude,
+tscat.longitude,
+tscat.observacoes
+
+from topsapp.clientes tc 
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id)
+INNER JOIN topsapp.servicos_clientes_acesso_tecnica tscat ON (tscat.servico_cliente_id=tsca.servico_cliente_id)) 
+TO '/tmp/topsapp-clientes-acessotecnico.csv' DELIMITER '|' CSV;
+
+COPY (
+select 
+tc.id,
+tc.nome,
+tsc.id,
+tsca.usuario,
+te.id as oltid,
+te.nome as oltnome,
+te.ip as oltip,
+tbpp.porta_slot,
+tbpp.porta_id,
+tbpp.descricao,
+tscaf.serial_equipamento,
+tscaf.id_onu,
+tscaf.id_service_port,
+tscaf.provisionado,
+tsccafp.valor as vlan
+from topsapp.clientes tc 
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id)
+INNER JOIN topsapp.servicos_clientes_acesso_ftth tscaf ON (tscaf.servico_cliente_id=tsca.servico_cliente_id)
+INNER JOIN topsapp.bases_pacessos_portas tbpp ON (tbpp.id=tscaf.id_porta_olt)
+INNER JOIN topsapp.equiap te ON (te.id=tbpp.id_pacesso)
+LEFT JOIN topsapp.servicos_clientes_acesso_ftth_parametros tsccafp ON (tsccafp.servico_cliente_id=tsc.id and tsccafp.parametro like '%VLAN%')
+) TO '/tmp/topsapp-clientes-ftth.csv' DELIMITER '|' CSV;
+
+COPY (
+select id,
+descricao,
+999,
+agencia,
+dagencia,
+conta,
+dconta,
+convenio,
+carteira,
+cedente,
+'',
+tipo_documento 
+from topsapp.portadores ) 
+TO '/tmp/topsapp-portadores.csv' DELIMITER '|' CSV;
+
+COPY (
+select * 
+from topsapp.portadores ) 
+TO '/tmp/topsapp-portadores-all.csv' DELIMITER '|' CSV;
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+r.desconto_vencimento,
+r.id_portador
+FROM topsapp.receber r
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.cidades cid on (cid.id=tc.cidade)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id) 
+WHERE r.restado is null and r.id_portador=1
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-ativos-1.csv' DELIMITER '|' CSV;
+
+ id_portador 
+-------------
+            
+          18
+           8
+           1
+          16
+           7
+(6 rows)
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+r.desconto_vencimento,
+r.id_portador
+FROM topsapp.receber r
+INNER JOIN topsapp.portadores por on (por.id=r.id_portador)
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.cidades cid on (cid.id=tc.cidade)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id)
+WHERE r.restado is not null 
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-desativados.csv' DELIMITER '|' CSV;
+
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+r.desconto_vencimento,
+r.id_portador
+FROM topsapp.receber r
+INNER JOIN topsapp.portadores por on (por.id=r.id_portador)
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.cidades cid on (cid.id=tc.cidade)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id)
+WHERE r.restado is null
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-all.csv' DELIMITER '|' CSV;
+
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+r.desconto_vencimento,
+r.id_portador
+FROM topsapp.receber r
+INNER JOIN topsapp.portadores por on (por.id=r.id_portador)
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.cidades cid on (cid.id=tc.cidade)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id)
+WHERE r.restado=1
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-desativado.csv' DELIMITER '|' CSV;
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+g.url,
+g.lote,
+g.chave_gnt
+FROM topsapp.receber r
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id) 
+INNER JOIN topsapp.receber_f2b g ON (g.id_receber=r.id)
+WHERE r.id_portador=4
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-gerencianet-4.csv' DELIMITER '|' CSV;
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor
+FROM topsapp.receber r
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id) 
+WHERE r.id_portador=1
+AND r.id not in (select g.id_receber from topsapp.receber_f2b g)
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-1.csv' DELIMITER '|' CSV;
+
+
+
+
+
+
+COPY (
+SELECT 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor
+FROM topsapp.receber r
+INNER JOIN topsapp.clientes tc ON (tc.id=r.id_cliente)
+INNER JOIN topsapp.servicos_clientes tsc ON (tsc.cliente_id=tc.id) 
+INNER JOIN topsapp.servicos_clientes_acesso tsca ON (tsca.servico_cliente_id=tsc.id) 
+WHERE tsca.usuario='gsantana@lgnetpb.com.br'
+ORDER BY r.id ) TO '/tmp/topsapp-titulos-gsantana.csv' DELIMITER '|' CSV;
+
+
+
+COPY radacct (radacctid            ,
+acctsessionid        ,
+acctuniqueid         ,
+username             ,
+groupname            ,
+realm                ,
+nasipaddress         ,
+nasportid            ,
+nasporttype          ,
+acctstarttime        ,
+acctupdatetime       ,
+acctstoptime         ,
+acctsessiontime      ,
+acctauthentic        ,
+connectinfo_start    ,
+connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+servicetype          ,
+xascendsessionsvrkey ,
+framedprotocol       ,
+framedipaddress      ,
+framedipv6prefix     ,
+delegatedipv6prefix  ,
+acctstartdelay       ,
+acctstopdelay        )
+FROM '/tmp/topsapp-radacct.csv' DELIMITER '|' CSV;
+
+
+copy (
+select 
+radacctid            ,
+acctsessionid        ,
+acctuniqueid         ,
+username             ,
+0            ,
+realm                ,
+nasipaddress         ,
+nasportid            ,
+nasporttype          ,
+acctstarttime        ,
+0,
+acctstoptime         ,
+acctsessiontime      ,
+acctauthentic        ,
+connectinfo_start    ,
+connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+servicetype          ,
+xascendsessionsvrkey ,
+framedprotocol       ,
+framedipaddress      ,
+framedipv6prefix     ,
+delegatedipv6prefix  ,
+acctstartdelay       ,
+acctstopdelay        
+from radacct
+) TO '/tmp/radacct.csv' DELIMITER ';' CSV;
+
+

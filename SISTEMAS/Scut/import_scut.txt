@@ -1,0 +1,133 @@
+select 
+BAN_CODIGO,
+AGENCIA,
+NR_CONTA,
+BAN_CONVENIO,
+NR_CARTEIRA,
+CEDENTE,
+LOCALPGTO,
+INSTRUCAO1,
+INSTRUCAO2,
+INSTRUCAO3,
+INSTRUCAO4
+FROM bancobranca
+INTO OUTFILE 'scut-portadores.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select 
+m.MEN_CODIGO,
+m.MEN_DESCRICAO,
+m.MEN_VALOR,
+b.BAN_BANDA,
+15 as diasbloqueio,
+10 as diasaviso
+from mensalidade m 
+INNER JOIN banda b on (b.BAN_CODIGO=m.BAN_CODIGO)
+INTO OUTFILE '/tmp/scut-planos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select 
+m.MEN_CODIGO,
+m.MEN_DESCRICAO,
+m.MEN_VALOR,
+'1024/2048' as banda,
+15 as diasbloqueio,
+10 as diasaviso
+from mensalidade m 
+INTO OUTFILE '/tmp/scut-planos2.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select 
+MAT_CODIGO,
+MAT_DESCRICAO
+from material 
+INTO OUTFILE '/tmp/scut-material.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select 
+CLI_LOGIN,
+MAT_CODIGO,
+COM_QTDADE,
+COM_DATA
+from comodato 
+INTO OUTFILE '/tmp/scut-comodato.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select c.CLI_LOGIN,
+       c.CLI_SENHA,
+       c.CLI_TIPO,
+       c.CLI_NOME,
+       c.CLI_CPF,
+       c.CLI_CGC,
+       c.CLI_INSCRICAO,
+       c.CLI_DTNASCIMENTO,
+       c.CLI_DTCADASTRO,
+       c.CLI_DTCONTRATO,
+       c.CLI_BLOQUEADO,
+       c.CLI_DTCANCELAMENTO,
+       c.CLI_OBS,
+       c.CLI_CORTAR,
+       c.CLI_BOLETO,
+       c.CLI_ENDERECO,
+       c.CLI_COMPLEMENTO,
+       c.CLI_BAIRRO,
+       c.CLI_CEP,
+       c.CLI_CIDADE,
+       c.CLI_ESTADO,
+       c.CLI_EMAIL,
+       c.CLI_FONE,
+       c.CLI_CELULAR,
+       c.CLI_MAC,
+       r.IPS_NUMERO,
+       c.CLI_DTCANCELAMENTO,
+       c.CLI_LIBERADO,
+       c.CLI_CHAVE_CENTRAL,
+       c.BAN_CODIGO,
+       c.CLI_DIATARI,
+       cm.MEN_CODIGO,
+       mk.CMK_HOTSPOT_PROFILE
+
+FROM clientes c 
+INNER JOIN cliente_mk mk ON (mk.CLI_LOGIN=c.CLI_LOGIN)
+INNER JOIN clientes_mensalidade cm ON (cm.CLI_LOGIN=c.CLI_LOGIN)
+INNER JOIN mensalidade me ON(me.MEN_CODIGO=cm.MEN_CODIGO)
+LEFT OUTER JOIN rede r ON(r.CLI_LOGIN=c.CLI_LOGIN)
+INTO OUTFILE '/tmp/scut-clientes.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+c.CLI_CORTAR == 1 - nao suspende 
+c.CLI_BLOQUEADO is not null and c.CLI_DTCANCELAMENTO is null; = bloqueado
+c.CLI_DTCANCELAMENTO is not null; = cancelado
+c.CLI_DTCANCELAMENTO is null and c.CLI_BLOQUEADO is null; = liberado
+
+
+select
+b.bid,
+b.login,
+b.titulo,
+b.instrucoes_linha4 as demo,
+b.instrucoes_linha5 as demo1,
+b.dt_emissao,
+b.dt_venc,
+b.dt_pgto,
+b.val_titulo,
+b.val_pago,
+b.descontos,
+b.juros,
+b.parcela,
+b.barra,
+b.nosso_numero,
+b.chave_digital,
+b.link
+
+from boletos b order by bid
+INTO OUTFILE '/tmp/scut-titulos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+
+select
+b.bid,
+b.nosso_numero,
+b.link
+from boletos b where link is not null order by bid
+INTO OUTFILE '/tmp/scut-titulos-boletofacil.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+

@@ -1,0 +1,455 @@
+COPY (
+select usr_login,'md5$'||usr_senha,usr_nome from fr_usuario
+) TO '/tmp/mksolution-usuarios.csv' DELIMITER '|' CSV;
+
+
+
+COPY (
+select codprofile,
+       banco,
+       nome_profile,
+       agencia,
+       agencia_dv,
+       conta_corrente,
+       dv_conta,
+       codigo_cedente,
+       num_convenio,
+       carteira,
+       modalidade,
+       tipo_cobranca,
+       nome_cedente,
+       doc_cedente,
+       local_pgto2,
+       sigcb,
+       msg_linha1,
+       msg_linha2,
+       msg_linha3,
+       msg_linha4,
+       msg_linha5
+from mk_profile_pgto
+) TO '/tmp/mksolution-portadores.csv' DELIMITER '|' CSV;
+
+COPY (
+select plano.codplano,
+       plano.descricao,
+       plano.vlr_mensalidade,
+       plano.vel_down,
+       plano.vel_up,
+       plano.vlr_mensalidade,
+       plano.inativo,
+       plano.address_list,
+       plano.prioridade,
+       plano.burst_down,
+       plano.burst_up,
+       plano.brt_thre_down,
+       plano.brt_thre_up,
+       plano.meses_contrato,
+       plano.egress_policy_ipv4,
+       plano.ingress_policy_ipv4,
+       plano.cd_empresa
+from mk_planos_acesso plano
+) TO '/tmp/mksolution-planos.csv' DELIMITER '|' CSV;
+
+
+-- CLIENTES
+COPY (
+select pessoa.codpessoa,
+       contrato.codcontrato,
+       pessoa.tipopessoa,
+       pessoa.nome_razaosocial,
+       pessoa.cpf,
+       pessoa.cnpj,
+       pessoa.rg,
+       pessoa.ie,
+       pessoa.im,
+       pessoa.nascimento,
+       pessoa.contato,
+       pessoa.nomepai,
+       pessoa.nomemae,
+       pessoa.observacoes,
+       pessoa.aceita_emails,
+       pessoa.email,
+       pessoa.fone01,
+       pessoa.fone02,
+       '' as extrainfo,
+       logradouro.logradouro,
+       pessoa.numero,
+       pessoa.complementoendereco,
+       bairro.bairro,
+       pessoa.cep,
+       cidade.cidade,
+       estado.siglaestado,
+       logradourocob.logradouro,
+       pessoa.numerocobranca,
+       pessoa.complementoenderecocobr,
+       bairrocob.bairro,
+       cidadecob.cidade,
+       estadocob.siglaestado,
+       --pessoa.dia_vencimento,
+       case when contrato.codcontrato is not null then (case when contrato.dia_vencimento is not null then contrato.dia_vencimento else extract(day from contrato.primeiro_vencimento) end) else pessoa.dia_vencimento end as dia_vencimento,
+       pessoa.pass_sac as senha_central,
+       contrato.dt_cancelamento,
+       contrato.suspenso_dt,
+       pessoa.datacadastro,
+       contrato.comodato,
+       contrato.pre_pago,
+       contrato.plano_acesso,
+       case when conexao.username is not null then conexao.username else 'cancelado'||contrato.codcontrato end as conexao_login,
+       case when conexao.password is not null then conexao.password else 'cancelado'::text end as conexao_senha,
+       case when conexao.mac_address is not null then conexao.mac_address else null end as conexao_mac,
+       case when conexao.framedipaddress is not null then conexao.framedipaddress else null end as conexao_ip,
+       case when conexao.obs is not null then conexao.obs else null end as conexao_obs,
+       pessoa.inativo,
+       contrato.cd_empresa
+       
+FROM mk_pessoas pessoa
+INNER JOIN mk_cidades cidade ON (cidade.codcidade=pessoa.codcidade)
+INNER JOIN mk_cidades cidadecob ON (cidadecob.codcidade=pessoa.codcidadecobranca)
+INNER JOIN mk_logradouros logradouro ON (logradouro.codlogradouro=pessoa.codlogradouro)
+INNER JOIN mk_logradouros logradourocob ON (logradourocob.codlogradouro=pessoa.codlogradourocobranca)
+INNER JOIN mk_bairros bairro ON (bairro.codbairro=pessoa.codbairro)
+INNER JOIN mk_bairros bairrocob ON (bairrocob.codbairro=pessoa.codbairrocobranca)
+INNER JOIN mk_estados estado ON (estado.codestado=pessoa.codestado)
+INNER JOIN mk_estados estadocob ON (estadocob.codestado=pessoa.codestadocobranca)
+INNER JOIN mk_contratos contrato ON (contrato.cliente=pessoa.codpessoa) 
+LEFT JOIN mk_conexoes conexao ON (conexao.contrato=contrato.codcontrato) where pessoa.codpessoa=6154
+ORDER BY pessoa.nome_razaosocial
+) TO '/tmp/mksolution-clientes.csv' DELIMITER '|' CSV;
+
+COPY (select username from mk_conexoes where conexao_bloqueada='N' ) TO '/tmp/mksolution-logins-liberados.txt' DELIMITER '|' CSV;
+COPY (select username from mk_conexoes where conexao_bloqueada='S' ) TO '/tmp/mksolution-logins-bloqueados.txt' DELIMITER '|' CSV;
+
+COPY (
+select pessoa.codpessoa,
+       conexao.contrato,
+       pessoa.tipopessoa,
+       pessoa.nome_razaosocial,
+       pessoa.cpf,
+       pessoa.cnpj,
+       pessoa.rg,
+       pessoa.ie,
+       pessoa.im,
+       pessoa.nascimento,
+       pessoa.contato,
+       pessoa.nomepai,
+       pessoa.nomemae,
+       pessoa.observacoes,
+       pessoa.aceita_emails,
+       pessoa.email,
+       pessoa.fone01,
+       pessoa.fone02,
+       '' as extrainfo,
+       logradouro.logradouro,
+       pessoa.numero,
+       pessoa.complementoendereco,
+       bairro.bairro,
+       pessoa.cep,
+       cidade.cidade,
+       estado.siglaestado,
+       logradourocob.logradouro,
+       pessoa.numerocobranca,
+       pessoa.complementoenderecocobr,
+       bairrocob.bairro,
+       cidadecob.cidade,
+       estadocob.siglaestado,
+       pessoa.dia_vencimento,
+       pessoa.pass_sac as senha_central,
+       '' as dt_cancelado,
+       '' as dt_suspenso,
+       conexao.data_hora_criacao,
+       0,
+       0,
+       plano.codplano,
+       case when conexao.username is not null then conexao.username else 'cancelado'||pessoa.codpessoa end as conexao_login,
+       case when conexao.password is not null then conexao.password else 'cancelado'::text end as conexao_senha,
+       case when conexao.mac_address is not null then conexao.mac_address else null end as conexao_mac,
+       case when conexao.framedipaddress is not null then conexao.framedipaddress else null end as conexao_ip,
+       case when conexao.obs is not null then conexao.obs else null end as conexao_obs,
+       pessoa.inativo,
+       pessoa.observacoes2
+       
+FROM mk_pessoas pessoa
+INNER JOIN mk_cidades cidade ON (cidade.codcidade=pessoa.codcidade)
+INNER JOIN mk_cidades cidadecob ON (cidadecob.codcidade=pessoa.codcidadecobranca)
+INNER JOIN mk_logradouros logradouro ON (logradouro.codlogradouro=pessoa.codlogradouro)
+INNER JOIN mk_logradouros logradourocob ON (logradourocob.codlogradouro=pessoa.codlogradourocobranca)
+INNER JOIN mk_bairros bairro ON (bairro.codbairro=pessoa.codbairro)
+INNER JOIN mk_bairros bairrocob ON (bairrocob.codbairro=pessoa.codbairrocobranca)
+INNER JOIN mk_estados estado ON (estado.codestado=pessoa.codestado)
+INNER JOIN mk_estados estadocob ON (estadocob.codestado=pessoa.codestadocobranca) 
+INNER JOIN mk_conexoes conexao ON (conexao.codcliente=pessoa.codpessoa)
+INNER JOIN mk_planos_acesso plano on (plano.codplano=conexao.codplano_acesso)
+WHERE conexao.contrato is null
+ORDER BY pessoa.nome_razaosocial
+) TO '/tmp/mksolution-clientes-semcontrato.csv' DELIMITER '|' CSV;
+
+
+       3
+       6
+       7
+      11
+      12
+      14
+      15
+      16
+
+create index mk_plano_contas_codconta_idx on mk_plano_contas (codconta);
+create index mk_boletos_gerados_codconta_idx on mk_boletos_gerados (codconta);
+CREATE INDEX mk_boletos_gerados_vencimento_idx ON mk_boletos_gerados (vencimento_dt_normal);
+
+
+copy (
+select p.codcliente_codfornecedor as cliente,  
+       p.codvinculado as contrato,
+       b.cod_cedente,      
+       p.descricao_conta as demonstrativo,
+       p.data_lancamento as emissao,
+       p.data_vencimento as vencimento,
+       p.data_liquidacao as pagamento,
+       b.cd_fatura as numero_documento,
+       b.nosso_numero as nosso_numero,
+       f.valor_total as valor,
+       f.vlr_liquidacao as valorpago,
+       b.codconta,
+       b.cod_cedente,
+       f.suspenso,
+       f.data_suspensao,
+       f.excluida,
+       b.substituido,
+       b.profile,
+       b.linha_digitavel,
+       b.codigo_barras,
+       b.profile
+from mk_plano_contas p 
+inner join mk_contas_faturadas cf on (cf.cd_conta=p.codconta)
+inner join mk_faturas f on (f.codfatura=cf.cd_fatura and f.data_exclusao is null)
+inner join mk_boletos_gerados b on (b.cd_fatura=cf.cd_fatura or b.codconta=p.codconta)
+) TO '/tmp/mksolution-titulos.csv' DELIMITER '|' CSV;
+
+
+copy (
+select p.codcliente_codfornecedor,
+       f.cd_vinculado,
+       f.cd_profile_cobranca,      
+       f.descricao as demonstrativo,
+       p.data_lancamento as emissao,
+       f.data_vencimento_original as vencimento,
+       f.data_liquidacao as pagamento,
+       f.codfatura as numero_documento,
+       f.codfatura as nosso_numero,
+       f.valor_total as valor,
+       f.vlr_liquidacao as valorpago,
+       p.codconta,
+       '',
+       f.suspenso,
+       f.data_suspensao,
+       f.excluida,
+       '',
+       f.cd_profile_cobranca
+from mk_plano_contas p 
+inner join mk_contas_faturadas cf on (cf.cd_conta=p.codconta)
+inner join mk_faturas f on (f.codfatura=cf.cd_fatura and f.data_exclusao is null)
+WHERE f.cd_profile_cobranca=5
+) TO '/tmp/mksolution-titulos-local-5.csv' DELIMITER '|' CSV;
+
+
+
+
+COPY (
+select codatclass + 100,descricao from mk_atendimento_classificacao) TO '/tmp/mksolution-atendimento-tipo.csv' DELIMITER '|' CSV;
+
+COPY (
+select codostipo + 100,descricao from mk_os_tipo) TO '/tmp/mksolution-os-tipo.csv' DELIMITER '|' CSV;
+
+COPY ( 
+select 
+a.codatendimento,
+a.cliente_cadastrado,
+case when a.classificacao_atendimento is not null then a.classificacao_atendimento + 100 end as classificacao_atendimento,
+'' as setor,
+a.protocolo,
+a.finalizado,
+a.operador_abertura, 
+a.operador_atendimento,
+a.dt_abertura::text || ' '||hr_abertura::text as data_cadastro,
+'' as data_agendamento,
+a.dt_finaliza::text || ' ' || hr_finaliza::text as data_finalizacao,
+a.info_cliente,
+a.texto_encerramento
+
+FROM mk_atendimento a 
+left join mk_atendimento_classificacao tipo on (tipo.codatclass=a.classificacao_atendimento)
+where a.cliente_cadastrado is not null
+) TO '/tmp/mksolution-atendimentos.csv' DELIMITER '|' CSV;
+
+
+COPY ( 
+select 
+o.codos,
+o.cd_atendimento,
+o.protocolo_os,
+o.tipo_os + 100,
+o.operador,
+o.encerrado,
+o.data_abertura::text || ' ' || o.hora_abertura as data_cadastro,
+ag.data::text || ' ' || ag.hora as data_agendamento,
+o.data_fechamento::text || ' ' || o.hora_fechamento as data_fechamento,
+o.defeito_reclamado,
+o.defeito_constatado,
+o.observacoes,
+o.servico_prestado,
+o.cd_contrato,
+o.cliente
+
+FROM mk_os o 
+left join mk_agenda ag on (ag.codos=o.codos)
+and o.cd_contrato is not null
+) TO '/tmp/mksolution-os-all.csv' DELIMITER '|' CSV;
+
+
+COPY ( 
+select p.codposte,
+       p.identificacao,
+       p.latitude||','||p.longitude,
+       p.localizacao,
+       logradouro.logradouro,
+       p.numero,
+       p.complemento,
+       bairro.bairro,
+       cidade.cidade,
+       estado.siglaestado
+from mk_fiber_postes p
+left join mk_logradouros logradouro ON (logradouro.codlogradouro=p.cd_logradouro)
+left join mk_cidades cidade on (cidade.codcidade=p.cd_cidade)
+left join mk_estados estado on (estado.codestado=p.cd_uf)
+left join mk_bairros bairro ON (bairro.codbairro=p.cd_bairro)
+) TO '/tmp/mksolution-postes.csv' DELIMITER '|' CSV;
+
+COPY (
+select c.identificacao,
+       p.latitude||','||p.longitude,
+       c.cd_poste,
+       s.portas 
+from mk_fiber_caixa c inner join mk_fiber_postes p on (p.codposte=c.cd_poste) inner join mk_fiber_splitter s on (s.descricao_modelo=c.identificacao)) TO '/tmp/mksolution-cto.csv' DELIMITER '|' CSV;
+
+
+
+
+
+
+
+COPY (
+select pessoa.codpessoa,
+       pessoa.tipopessoa,
+       pessoa.nome_razaosocial,
+       pessoa.cpf,
+       pessoa.cnpj,
+       pessoa.rg,
+       pessoa.ie,
+       pessoa.im,
+       pessoa.nascimento,
+       pessoa.contato,
+       pessoa.nomepai,
+       pessoa.nomemae,
+       pessoa.observacoes,
+       pessoa.aceita_emails,
+       pessoa.email,
+       pessoa.fone01,
+       pessoa.fone02,
+       logradouro.logradouro,
+       pessoa.numero,
+       pessoa.complementoendereco,
+       bairro.bairro,
+       pessoa.cep,
+       cidade.cidade,
+       estado.siglaestado,
+       pessoa.datacadastro
+FROM mk_pessoas pessoa
+INNER JOIN mk_cidades cidade ON (cidade.codcidade=pessoa.codcidade)
+INNER JOIN mk_cidades cidadecob ON (cidadecob.codcidade=pessoa.codcidadecobranca)
+INNER JOIN mk_logradouros logradouro ON (logradouro.codlogradouro=pessoa.codlogradouro)
+INNER JOIN mk_logradouros logradourocob ON (logradourocob.codlogradouro=pessoa.codlogradourocobranca)
+INNER JOIN mk_bairros bairro ON (bairro.codbairro=pessoa.codbairro)
+INNER JOIN mk_bairros bairrocob ON (bairrocob.codbairro=pessoa.codbairrocobranca)
+INNER JOIN mk_estados estado ON (estado.codestado=pessoa.codestado)
+INNER JOIN mk_estados estadocob ON (estadocob.codestado=pessoa.codestadocobranca)
+WHERE pessoa.classificacao=2
+ORDER BY pessoa.nome_razaosocial
+) TO '/tmp/mksolution-fornecedores.csv' DELIMITER '|' CSV;
+
+
+
+COPY (
+select 
+radacctid            ,
+acctsessionid        ,
+guid_sessao as acctuniqueid         ,
+username             ,
+'' as realm                ,
+nasipaddress         ,
+nasportid            ,
+'' as nasporttype          ,
+acctstartdate::text||acctstarttime::text        ,
+'' as AcctUpdateTime       ,
+acctstopdate::text||acctstoptime::text         ,
+'' as acctsessiontime      ,
+'' as acctauthentic        ,
+'' as connectinfo_start    ,
+'' as connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+'' as servicetype          ,
+'' as xascendsessionsvrkey ,
+'' as framedprotocol       ,
+framedipaddress      ,
+'' as framedipv6prefix     ,
+'' as delegatedipv6prefix  
+from acct.mk_radacct
+) TO '/tmp/mksolution-radacct.csv' DELIMITER '|' CSV;
+
+
+COPY (
+select 
+radacctid            ,
+acctsessionid        ,
+acctuniqueid         ,
+username             ,
+null                 ,
+realm                ,
+nasipaddress         ,
+nasportid            ,
+nasporttype          ,
+acctstarttime        ,
+'' as acctupdatetime ,
+acctstoptime         ,
+acctsessiontime      ,
+acctauthentic        ,
+connectinfo_start    ,
+connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+servicetype          ,
+xascendsessionsvrkey ,
+framedprotocol       ,
+framedipaddress      ,
+null as framedipv6prefix,
+null as delegatedipv6prefix
+from radius.radacct 
+) TO '/tmp/mksolution-radacct-all.csv' DELIMITER '|' CSV;
+
+
+#from django.db.models import F,Q
+#from apps.financeiro import models
+#for t in models.Titulo.objects.filter(Q(cobranca__isnull=False),~Q(cobranca__cliente=F('cliente'))):
+#    if t.cliente.clientecontrato_set.all().count() == 1:
+#        t.cobranca=t.cliente.clientecontrato_set.all()[0].cobranca
+#        t.save()
+#        print(t)
+
+

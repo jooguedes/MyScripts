@@ -1,0 +1,449 @@
+COPY (
+SELECT 
+cl.client_pk as id,
+cpe.network_cpe_username as login,
+'' as pessoa,
+cl.client_name || ' ' || cl.client_lastname as nome,
+1,
+cl.client_doc1 as cpfcnpj,
+10,
+15,
+cl.client_doc2 as rg,
+'' as profissao,
+'' as sexo,
+cl.client_date_birth as nascimento,
+'' as fantasia, 
+'' as contato,
+endereco.address as logradouro,
+endereco.address_number as numero,
+endereco.address_completation as complemento,
+endereco.address_neighborhood as bairro,
+endereco.address_zipcode as cep,
+endereco.address_state as uf,
+endereco.address_province as cidade,
+'',
+'',
+cl.client_mail as email,
+cl.client_observations as observacoes,
+cl.client_date_cad as datacadastro,
+cl.client_date_cad as datacadastro,
+'' as nas,
+'' as servidor,
+rp.radius_plans_name as plano,
+rp.radius_plans_amount as planovalor,
+rp.radius_plans_download_speed,
+rp.radius_plans_upload_speed,
+cpe.network_cpe_ip as ip,
+cpe.network_cpe_mac as mac,
+ct.contract_pay_day as vencimento,
+ct.contract_pay_discount as desconto, 
+0 as acrescimo,
+'' as transmissor,
+'' as receptor,
+'nao' as comodato,
+case when ct.contract_free = 't' then 'sim' else 'nao' end as isento, 
+cl.client_status as cliente_status,
+ct.contract_status as contrato_status,
+cpe.network_cpe_password as senha,
+ct.contract_pk,
+cpe.network_cpe_status
+FROM controllr.client cl
+INNER JOIN controllr.addresses endereco ON (endereco.client_pk=cl.client_pk)
+INNER JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+INNER JOIN controllr.network_cpe cpe ON (cpe.contract_pk=ct.contract_pk)
+INNER JOIN controllr.radius_plans rp ON (rp.radius_plans_pk=cpe.radius_plans_pk)
+AND ct.contract_deleted='f'
+order by cl.client_status,cl.client_pk
+) TO '/tmp/controllr-clientes.csv' WITH CSV HEADER;
+
+
+COPY (
+SELECT 
+DISTINCT 
+cl.client_pk as id,
+cpe.cpe_username as login,
+'' as pessoa,
+cl.client_name || ' ' || cl.client_lastname as nome,
+1,
+cl.client_doc1 as cpfcnpj,
+10,
+15,
+cl.client_doc2 as rg,
+'' as profissao,
+'' as sexo,
+cl.client_date_birth as nascimento,
+'' as fantasia, 
+'' as contato,
+endereco.address as logradouro,
+endereco.address_number as numero,
+endereco.address_completation as complemento,
+endereco.address_neighborhood as bairro,
+endereco.address_zipcode as cep,
+endereco.address_state as uf,
+endereco.address_province as cidade,
+'',
+'',
+'' as email,
+cl.client_observations as observacoes,
+cl.client_date_cad as datacadastro,
+cl.client_date_cad as datacadastro,
+'' as nas,
+'' as servidor,
+rp.plan_name as plano,
+rp.plan_amount as planovalor,
+rp.plan_rx_speed,
+rp.plan_tx_speed,
+cpe.cpe_v4_ip as ip,
+cpe.cpe_mac as mac,
+ct.contract_pay_day as vencimento,
+ct.contract_pay_discount as desconto, 
+0 as acrescimo,
+'' as transmissor,
+'' as receptor,
+'nao' as comodato,
+case when ct.contract_free = 't' then 'sim' else 'nao' end as isento, 
+cl.client_status as cliente_status,
+ct.contract_status as contrato_status,
+cpe.cpe_password as senha,
+ct.contract_pk,
+cpe.cpe_status,
+contrato_endereco.address as contrato_end_logradouro,
+contrato_endereco.address_number as contrato_end_numero,
+contrato_endereco.address_completation as contrato_end_complemento,
+contrato_endereco.address_neighborhood as contrato_end_bairro,
+contrato_endereco.address_zipcode as contrato_end_cep,
+contrato_endereco.address_state as contrato_end_uf,
+contrato_endereco.address_province as contrato_end_cidade,
+cpe_endereco.address as servico_end_logradouro,
+cpe_endereco.address_number as servico_end_numero,
+cpe_endereco.address_completation as servico_end_complemento,
+cpe_endereco.address_neighborhood as servico_end_bairro,
+cpe_endereco.address_zipcode as servico_end_cep,
+cpe_endereco.address_state as servico_end_uf,
+cpe_endereco.address_province as servico_end_cidade
+FROM controllr.client cl
+INNER JOIN controllr.addresses endereco ON (endereco.client_pk=cl.client_pk)
+INNER JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+INNER JOIN public.aaa_cpe cpe ON (cpe.contract_pk=ct.contract_pk)
+INNER JOIN public.aaa_plan rp ON (rp.plan_pk=cpe.plan_pk)
+INNER JOIN controllr.addresses contrato_endereco ON (contrato_endereco.address_pk=ct.address_pk)
+INNER JOIN controllr.addresses cpe_endereco ON (cpe_endereco.address_pk=cpe.address_pk)
+WHERE ct.contract_deleted='f'
+order by cl.client_status,cl.client_pk, ct.contract_pk
+) TO '/tmp/controllr-clientes2.csv' WITH CSV HEADER;
+
+
+COPY (
+SELECT  
+cl.client_pk as id,
+cl.client_username as login,
+'' as pessoa,
+cl.client_name || ' ' || cl.client_lastname as nome,
+1,
+cl.client_doc1 as cpfcnpj,
+10,
+15,
+cl.client_doc2 as rg,
+'' as profissao,
+'' as sexo,
+cl.client_date_birth as nascimento,
+'' as fantasia, 
+'' as contato,
+endereco.address as logradouro,
+endereco.address_number as numero,
+endereco.address_completation as complemento,
+endereco.address_neighborhood as bairro,
+endereco.address_zipcode as cep,
+endereco.address_state as uf,
+endereco.address_province as cidade,
+'',
+'',
+'' as email,
+cl.client_observations as observacoes,
+cl.client_date_cad as datacadastro,
+cl.client_date_cad as datacadastro,
+'' as nas,
+'' as servidor,
+rp.plan_name as plano,
+rp.plan_amount as planovalor,
+'' as tipo,
+cpe.cpe_v4_ip as ip,
+cpe.cpe_v4_ip as ip,
+cpe.cpe_mac as mac,
+ct.contract_pay_day as vencimento,
+ct.contract_pay_discount as desconto, 
+0 as acrescimo,
+'' as transmissor,
+'' as receptor,
+'nao' as comodato,
+case when ct.contract_free = 't' then 'sim' else 'nao' end as isento,
+cl.client_status,
+ct.contract_status, 
+cl.client_password as senha,
+ct.contract_pk,
+cpe.cpe_deleted,
+ct.contract_deleted,
+'' as conexao_status
+FROM controllr.client cl
+INNER JOIN controllr.addresses endereco ON (endereco.client_pk=cl.client_pk)
+LEFT JOIN public.aaa_cpe cpe ON (cpe.client_pk=cl.client_pk)
+LEFT JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+LEFT JOIN public.aaa_plan rp ON (rp.plan_pk=cpe.plan_pk)
+WHERE cl.client_status = '0'
+ORDER BY cl.client_name
+) TO '/tmp/controllr-clientes-ativos-semcontrato.csv' WITH CSV HEADER;
+
+
+COPY (
+SELECT 
+cpe.network_cpe_username,
+cpe.network_cpe_fiber_olt_ip,
+cpe.network_cpe_fiber_onu_pon,
+cpe.network_cpe_fiber_onu_name,
+cpe.network_cpe_fiber_onu_mac
+FROM controllr.network_cpe cpe 
+WHERE char_length(cpe.network_cpe_fiber_olt_ip) > 0
+) TO '/tmp/controllr-logins-onu.csv' WITH CSV HEADER;
+
+
+
+COPY (
+SELECT 
+cl.client_pk as id,
+f.phone_number,
+f.phone_identification
+FROM controllr.client cl
+inner join controllr.client_phone f on (f.client_pk=cl.client_pk)
+) TO '/tmp/controllr-clientes-phone.csv' WITH CSV HEADER;
+
+COPY (
+SELECT 
+cl.client_pk as id,
+f.client_email_address,
+f.client_email_identification
+FROM controllr.client cl
+inner join public.client_email f on (f.client_pk=cl.client_pk)
+) TO '/tmp/controllr-clientes-email.csv' WITH CSV HEADER;
+
+
+COPY ( select network_cpe_username,network_cpe_ip from controllr.network_cpe where char_length(network_cpe_ip) > 1) TO '/tmp/controllr-logins-ips.csv' WITH CSV HEADER;
+
+
+
+
+
+COPY (
+SELECT 
+1,
+cpe.network_cpe_username as login,
+cl.client_doc1 as cpfcnpj,
+invoice.invoice_payment_method as formpag,
+'' as tipo,
+--invdetail.invoice_details_name as demonstrativo,
+'' as demonstrativo,
+invoice.invoice_date_document as processamento,
+invoice.invoice_date_due as vencimento,
+invoice.invoice_date_credit as datapag,
+invoice.invoice_pk as titulo,
+invoice.invoice_nosso_num as nossonumero,
+invoice.invoice_amount_document as valor,
+invoice.invoice_amount_paid as valorpago,
+invoice.invoice_gn_key  as gnet_key,       
+invoice.invoice_gn_return as gnet_link,     
+invoice.invoice_gn_link as gnet_carne      
+FROM controllr.client cl
+INNER JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+INNER JOIN controllr.network_cpe cpe ON (cpe.contract_number=ct.contract_number)
+INNER JOIN controllr.radius_plans rp ON (rp.radius_plans_pk=cpe.radius_plans_pk)
+INNER JOIN controllr.invoice invoice ON (invoice.client_pk=cl.client_pk AND invoice.contract_pk=ct.contract_pk)
+--INNER JOIN controllr.invoice_details invdetail ON (invdetail.invoice_pk=invoice.invoice_pk)
+WHERE invoice.invoice_deleted='f'
+and invoice.bank_account_pk='1'
+ORDER BY cpe.network_cpe_username,invoice.invoice_date_due) TO '/tmp/controllr-titulos-1.csv' WITH CSV HEADER;
+
+
+COPY (
+SELECT 
+1,
+cpe.cpe_username as login,
+cl.client_doc1 as cpfcnpj,
+invoice.invoice_payment_method as formpag,
+'' as tipo,
+--invdetail.invoice_details_name as demonstrativo,
+'' as demonstrativo,
+invoice.invoice_date_document as processamento,
+invoice.invoice_date_due as vencimento,
+invoice.invoice_date_credit as datapag,
+invoice.invoice_pk as titulo,
+invoice.invoice_nosso_num as nossonumero,
+invoice.invoice_amount_document as valor,
+invoice.invoice_amount_paid as valorpago,
+invoice.invoice_gn_key  as gnet_key,       
+invoice.invoice_gn_return as gnet_link,     
+invoice.invoice_gn_link as gnet_carne      
+FROM controllr.client cl
+INNER JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+INNER JOIN public.aaa_cpe cpe ON (cpe.contract_pk=ct.contract_pk)
+INNER JOIN controllr.invoice invoice ON (invoice.client_pk=cl.client_pk AND invoice.contract_pk=ct.contract_pk)
+WHERE invoice.invoice_deleted='f'
+and invoice.bank_account_pk='7'
+ORDER BY cpe.cpe_username,invoice.invoice_date_due) TO '/tmp/controllr-titulos-7.csv' WITH CSV HEADER;
+
+
+
+
+
+
+
+COPY (
+SELECT 
+1,
+cl.client_username as login,
+cl.client_doc1 as cpfcnpj,
+invoice.invoice_payment_method as formpag,
+'' as tipo,
+--invdetail.invoice_details_name as demonstrativo,
+'' as demonstrativo,
+invoice.invoice_date_document as processamento,
+invoice.invoice_date_due as vencimento,
+invoice.invoice_date_credit as datapag,
+invoice.invoice_pk as titulo,
+invoice.invoice_nosso_num as nossonumero,
+invoice.invoice_amount_document as valor,
+invoice.invoice_amount_paid as valorpago,
+invoice.invoice_gn_key  as gnet_key,       
+invoice.invoice_gn_return as gnet_link,     
+invoice.invoice_gn_link as gnet_carne      
+FROM controllr.client cl
+INNER JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+INNER JOIN controllr.invoice invoice ON (invoice.client_pk=cl.client_pk AND invoice.contract_pk=ct.contract_pk)
+--INNER JOIN controllr.invoice_details invdetail ON (invdetail.invoice_pk=invoice.invoice_pk)
+WHERE invoice.invoice_deleted='f'
+and invoice.bank_account_pk='1'
+ORDER BY cl.client_username,invoice.invoice_date_due) TO '/tmp/controllr-titulos-1p.csv' WITH CSV HEADER;
+
+
+
+COPY (
+SELECT 
+1,
+cpe.network_cpe_username as login,
+cl.client_doc1 as cpfcnpj,
+invoice.invoice_payment_method as formpag,
+'' as tipo,
+--invdetail.invoice_details_name as demonstrativo,
+'' as demonstrativo,
+invoice.invoice_date_document as processamento,
+invoice.invoice_date_due as vencimento,
+invoice.invoice_date_credit as datapag,
+invoice.invoice_pk as titulo,
+invoice.invoice_nosso_num as nossonumero,
+invoice.invoice_amount_document as valor,
+invoice.invoice_amount_paid as valorpago,
+invoice.invoice_gn_key  as gnet_key,       
+invoice.invoice_gn_return as gnet_link,     
+invoice.invoice_gn_link as gnet_carne      
+FROM controllr.client cl
+INNER JOIN controllr.contract ct ON (ct.client_pk = cl.client_pk)
+INNER JOIN controllr.network_cpe cpe ON (cpe.client_pk=cl.client_pk AND ct.contract_pk=cpe.contract_pk)
+INNER JOIN controllr.radius_plans rp ON (rp.radius_plans_pk=cpe.radius_plans_pk)
+INNER JOIN controllr.invoice invoice ON (invoice.client_pk=cl.client_pk AND invoice.contract_pk=ct.contract_pk)
+--INNER JOIN controllr.invoice_details invdetail ON (invdetail.invoice_pk=invoice.invoice_pk)
+WHERE invoice.invoice_deleted='t'
+and invoice.bank_account_pk='3'
+ORDER BY cpe.network_cpe_username,invoice.invoice_date_due) TO '/tmp/controllr-titulos-3-removidos.csv' WITH CSV HEADER;
+
+
+
+
+COPY (
+SELECT 
+1,
+cpe.network_cpe_username as login,
+cl.client_doc1 as cpfcnpj,
+invoice.invoice_payment_method as formpag,
+'' as tipo,
+--invdetail.invoice_details_name as demonstrativo,
+'' as demonstrativo,
+invoice.invoice_date_document as processamento,
+invoice.invoice_date_due as vencimento,
+invoice.invoice_date_credit as datapag,
+invoice.invoice_pk as titulo,
+invoice.invoice_nosso_num as nossonumero,
+invoice.invoice_amount_document as valor,
+invoice.invoice_amount_paid as valorpago,
+invoice.invoice_gn_key  as gnet_key,       
+invoice.invoice_gn_return as gnet_link,     
+invoice.invoice_gn_link as gnet_carne 
+FROM controllr.client cl
+INNER JOIN controllr.network_cpe cpe ON (cpe.client_pk=cl.client_pk)
+INNER JOIN controllr.contract ct ON (ct.contract_pk = cpe.contract_pk)
+INNER JOIN controllr.radius_plans rp ON (rp.radius_plans_pk=cpe.radius_plans_pk)
+INNER JOIN controllr.invoice invoice ON (invoice.client_pk=cl.client_pk AND invoice.contract_pk=ct.contract_pk)
+--INNER JOIN controllr.invoice_details invdetail ON (invdetail.invoice_pk=invoice.invoice_pk)
+WHERE invoice.invoice_deleted='f' and invoice.bank_account_pk='2'
+and char_length(invoice.invoice_gn_key) > 0
+ORDER BY cpe.network_cpe_username,invoice.invoice_date_due) TO '/tmp/controllr-titulos-gerencianet.csv' WITH CSV HEADER;
+
+
+COPY ( select client_pk,client_observations from controllr.client WHERE char_length(client_observations) > 0 ORDER BY client_pk ) TO '/tmp/controllr-clientes-obs.csv' WITH CSV HEADER;
+
+
+COPY (
+select 
+radacctid            ,
+acctsessionid        ,
+acctuniqueid         ,
+username             ,
+realm                ,
+nasipaddress         ,
+nasportid            ,
+nasporttype          ,
+acctstarttime        ,
+acctupdatetime,
+acctstoptime         ,
+acctsessiontime      ,
+acctauthentic        ,
+connectinfo_start    ,
+connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+servicetype          ,
+framedprotocol       ,
+framedipaddress      ,
+framedipv6address     ,
+'' as delegatedipv6prefix        
+from radius.sessions
+) TO '/tmp/radius.sessions.csv' WITH CSV HEADER;
+
+
+COPY radacct2 (radacctid            ,
+acctsessionid        ,
+acctuniqueid         ,
+username             ,
+realm                ,
+nasipaddress         ,
+nasportid            ,
+nasporttype          ,
+acctstarttime        ,
+AcctUpdateTime       ,
+acctstoptime         ,
+acctsessiontime      ,
+acctauthentic        ,
+connectinfo_start    ,
+connectinfo_stop     ,
+acctinputoctets      ,
+acctoutputoctets     ,
+calledstationid      ,
+callingstationid     ,
+acctterminatecause   ,
+servicetype          ,
+framedprotocol       ,
+framedipaddress      ,
+framedipv6prefix     ,
+delegatedipv6prefix )
+FROM '/opt/agiletelecom/radius.sessions.csv' DELIMITER ';' CSV;
+

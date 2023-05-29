@@ -1,0 +1,259 @@
+echo "" > create
+echo "create table clientes(" >> create
+head -n 1 clientes.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table servicos(" >> create
+head -n 1 servicos.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table servicos_clientes(" >> create
+head -n 1 servicos_clientes.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table servicos_clientes_acesso(" >> create; 
+head -n 1 servicos_clientes_acesso.csv | sed "s/,/ text,/g" >> create 
+echo "text);" >> create
+echo "" >> create
+echo "create table planos(" >> create
+head -n 1 planos.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table cidades(" >> create
+head -n 1 cidades.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table vencimentos(" >> create
+head -n 1 vencimentos.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table receber(" >> create
+head -n 1 receber.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table portadores(" >> create
+head -n 1 portadores.csv | sed "s/,/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+
+for i in clientes.csv.utf8 servicos.csv.utf8 servicos_clientes.csv.utf8 servicos_clientes_acesso.csv.utf8 planos.csv.utf8 cidades.csv.utf8 vencimentos.csv.utf8 receber.csv.utf8 portadores.csv.utf8; do cp $i /tmp; done 
+
+copy clientes from '/tmp/clientes.csv.utf8' delimiter ',' csv;
+copy servicos from '/tmp/servicos.csv.utf8' delimiter ',' csv;
+copy servicos_clientes from '/tmp/servicos_clientes.csv.utf8' delimiter ',' csv;
+copy servicos_clientes_acesso from '/tmp/servicos_clientes_acesso.csv.utf8' delimiter ',' csv;
+copy planos from '/tmp/planos.csv.utf8' delimiter ',' csv;
+copy cidades from '/tmp/cidades.csv.utf8' delimiter ',' csv;
+copy vencimentos from '/tmp/vencimentos.csv.utf8' delimiter ',' csv;
+copy receber from '/tmp/receber.csv.utf8' delimiter ',' csv;
+copy portadores from '/tmp/portadores.csv.utf8' delimiter ',' csv;
+
+copy (
+select 
+tc.id,
+tsca.usuario,
+tc.pessoa,
+tc.nome,
+1,
+tc.cpf,
+case when tp.corte::integer > 0 then tp.corte::integer else 15 end as diascorte,
+case when tp.corte::integer > 0 then tp.corte::integer else 15 end as diascorte,
+tc.rg,
+'' as profissao,
+tc.sexo,
+tc.data_nascimento,
+tc.fantasia,
+'' as contato,
+tc.endereco,
+tc.numero,
+tc.complemento,
+tc.bairro,
+tc.cep,
+tc.uf,
+cid.cidade,
+tc.celular,
+tc.telefone,
+tc.email,
+tsc.observacoes,
+ tc.data_cadastro,
+ tc.data_cadastro,
+ '' as grupo,
+ '' as nas,
+ts.descricao as plano, 
+ts.valor as plano_valor, 
+'' as conntipo,
+tsca.ip,
+tsca.ip,
+tsca.mac,
+tv.dia,
+tsc.desconto,
+tsc.acrescimo,
+'' as transmissor,
+'' as receptor,
+'nao' as comodato,
+case when tsc.gerar_fatura = 'f' then  'sim' else 'nao' end as isento,
+tsc.status,
+tsca.senha,
+tp.download,
+tp.upload,
+tsc.data as servicodata,
+tsc.data_bloqueio,
+tsc.data_desativacao,
+tc.pai,
+tc.mae,
+tc.natural_cidade,
+tc.natural_estado,
+tc.insc_estadual,
+tc.insc_municipal,
+tc.observacoes,
+tc.senhacentral,
+tc.observacoes_tecnica,
+tsc.id as id_servico,
+'' as latitude,
+'' as longitude
+from clientes tc 
+inner join cidades cid on (cid.id=tc.cidade)
+inner join servicos_clientes tsc on (tsc.cliente_id=tc.id) 
+inner join servicos_clientes_acesso tsca on (tsca.servico_cliente_id=tsc.id) 
+inner join servicos ts on (ts.id=tsc.servico_id)
+inner join planos tp on (tp.id_servico=ts.id)
+inner join vencimentos tv on (tv.id = tsc.vencimento_id)
+) to '/tmp/topsapp-clientes.csv.utf8' delimiter '|' csv;
+
+select distinct id_portador from receber order by id_portador;
+
+
+copy (
+select 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+'' as gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+'0.00'
+--r.desconto_vencimento
+--'0.00' as desconto_venc
+from receber r
+inner join clientes tc on (tc.id=r.id_cliente)
+inner join cidades cid on (cid.id=tc.cidade)
+inner join servicos_clientes tsc on (tsc.cliente_id=tc.id) 
+inner join servicos_clientes_acesso tsca on (tsca.servico_cliente_id=tsc.id) 
+where r.id_portador='15'
+order by r.id ) to '/tmp/topsapp-titulos-15-Gerencianet-API' delimiter '|' csv;
+
+copy (
+select 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor,
+g.url,
+g.lote,
+g.chave_gnt
+from receber r
+inner join clientes tc on (tc.id_cliente=r.id_cliente)
+inner join servicos_clientes tsc on (tsc.cliente_id=tc.id_cliente) 
+inner join servicos_clientes_acesso tsca on (tsca.servico_cliente_id=tsc.id) 
+inner join receber_f2b g on (g.id_receber=r.id_cliente)
+where r.id_portador='6'
+order by r.id ) to '/tmp/topsapp-titulos-gerencianet-6.csv.utf8' delimiter '|' csv;
+
+
+copy (
+select 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor
+from topsapp.receber r
+inner join topsapp.clientes tc on (tc.id=r.id_cliente)
+inner join topsapp.servicos_clientes tsc on (tsc.cliente_id=tc.id) 
+inner join topsapp.servicos_clientes_acesso tsca on (tsca.servico_cliente_id=tsc.id) 
+where r.id_portador=1
+and r.id not in (select g.id_receber from topsapp.receber_f2b g)
+order by r.id ) to '/tmp/topsapp-titulos-1.csv.utf8' delimiter '|' csv;
+
+
+
+
+
+
+copy (
+select 
+1,
+tsca.usuario,
+tc.cpf,
+'' as formapag,
+'mensalidade' as tipo,
+r.historico,
+r.data,
+r.vencimento,
+r.datapagto,
+r.id as numero,
+r.id as nossonumero,
+r.valor,
+r.valorpago,
+r.valor,
+r.gfiscal,
+'' as codigo_carne,
+'' as linhadig,
+'' as codigobarras,
+case when r.datapagto is null then 'aberto' else 'pago' end as status,
+r.valor
+from topsapp.receber r
+inner join topsapp.clientes tc on (tc.id=r.id_cliente)
+inner join topsapp.servicos_clientes tsc on (tsc.cliente_id=tc.id) 
+inner join topsapp.servicos_clientes_acesso tsca on (tsca.servico_cliente_id=tsc.id) 
+where tsca.usuario='gsantana@lgnetpb.com.br'
+order by r.id ) to '/tmp/topsapp-titulos-gsantana.csv.utf8' delimiter '|' csv;
+
+
+
+

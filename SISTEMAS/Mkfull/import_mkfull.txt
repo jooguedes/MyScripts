@@ -1,0 +1,146 @@
+select id,
+    name,
+    descricao_titulo,
+    valor,
+    adesao,
+    desconto_pontualidade_plano,
+    velocidade_down,
+    velocidade_up,
+    diasparacorte
+from set_planos 
+INTO OUTFILE '/tmp/mkfull-planos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select c.id,
+       c.tipo,
+       c.nomerazao,
+       c.fantasia,
+       c.cpfcnpj,
+       c.nascimento,
+       '',
+       c.diasparacorte,
+       c.rgie,
+       c.nascimento,
+       e.rua,
+       e.numero,
+       e.complemento,
+       e.bairro,
+       e.cep,
+       e.estado,
+       e.cidade,
+       e.referencia,
+       e.gps,
+       e2.rua,
+       e2.numero,
+       e2.complemento,
+       e2.bairro,
+       e2.cep,
+       e2.estado,
+       e2.cidade,
+       e2.referencia,
+       e2.gps,
+       c.telefone1,
+       c.telefone2,
+       c.email,
+       c.obs,
+       c.datacadastro,
+       c.dataativacao,
+       c.data_cancelamento,
+       c.plano,
+       c.ip,
+       c.mac,
+       c.vencimento,
+       c.tipocobranca,
+       c.desconto,
+       c.acrescimo,
+       c.comodato,
+       c.isento,
+       c.status,
+       c.permite_simultaneos,
+       c.login,
+       c.senha,
+       c.pai,
+       c.mae,
+       c.naturalidade,
+       c.observacao_ate,
+       c.equipamento
+from set_clientes c
+INNER JOIN set_clientes_enderecos e on (e.cliente=c.id and e.tipoendereco='residencial')
+INNER JOIN set_clientes_enderecos e2 on (e2.cliente=c.id and e2.tipoendereco='cobranca')
+INTO OUTFILE '/tmp/mkfull-clientes.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select * from set_contasbancarias \G;
+
+select 1,
+  t.clienteid,
+  c.cpfcnpj,
+  '',
+  t.tipo,
+  t.descricao,
+  t.processamento,
+  t.vencimento,
+  t.pagoem,
+  t.id,
+  t.nossonumero,
+  t.valor,
+  t.valor_pago,
+  t.valor,
+  '',
+  t.carneid,
+  t.linhadig,
+  '',
+  '',
+  t.valor
+from set_clientes c
+inner join cli_titulos t on (t.clienteid=c.id)
+where t.conta=1 and t.deletado='0' INTO OUTFILE '/tmp/mkfull-titulos-1.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select 1,
+  t.clienteid,
+  c.cpfcnpj,
+  '',
+  t.tipo,
+  t.descricao,
+  t.processamento,
+  t.vencimento,
+  t.pagoem,
+  t.id,
+  t.nossonumero,
+  t.valor,
+  t.valor_pago,
+  t.valor,
+  '',
+  t.carneid,
+  t.linhadig,
+  '',
+  '',
+  t.valor
+from set_clientes c
+inner join cli_titulos t on (t.clienteid=c.id)
+where t.conta=1 and t.deletado='1' INTO OUTFILE '/tmp/mkfull-titulos-1-delete.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select t.clienteid,t.id,g.charge_id,g.link,g.status,g.criado_em
+from set_clientes c 
+inner join cli_titulos t on (t.clienteid=c.id)
+inner join gerencianet_titulos g on (g.tituloid=t.id)
+INTO OUTFILE '/tmp/mkfull-gnet-titulos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select t.clienteid,t.id,g.charge_id,g.link,g.status,g.criado_em,g.carnet_id,gc.link
+from set_clientes c 
+inner join cli_titulos t on (t.clienteid=c.id)
+inner join gerencianet_titulos g on (g.tituloid=t.id)
+inner join gerencianet_carnes gc on (gc.carnet_id=g.carnet_id)
+INTO OUTFILE '/tmp/mkfull-gnet-carnes.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select t.clienteid,t.id,bf.code,bf.link,'',bf.criado_em
+from set_clientes c 
+inner join cli_titulos t on (t.clienteid=c.id)
+inner join boletofacil_titulos bf on (bf.tituloid=t.id)
+INTO OUTFILE '/tmp/mkfull-boletofacil-titulos.csv' FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+sed -i "s/\\\N//g" *.csv
+

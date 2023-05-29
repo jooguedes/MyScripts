@@ -1,0 +1,33 @@
+{
+    "linhaDigitavel": "74891123130025820268810731951041493460000011325",
+    "codigoBanco": "748",
+    "nomeBeneficiario": "OK NET",
+    "enderecoBeneficiario": "R. FIORINDO MARQUEZIN, 445",
+    "cpfCnpjBeneficiario": "18714361000165",
+    "cooperativaBeneficiario": "0268",
+    "postoBeneficiario": "10",
+    "codigoBeneficiario": "73195",
+    "dataDocumento": "2023-04-10",
+    "seuNumero": "22910",
+    "especieDocumento": "A",
+    "aceite": "N",
+    "dataProcessamento": "2023-04-10",
+    "nossoNumero": 231002582,
+    "especie": "REAL",
+    "valorDocumento": 113.25,
+    "dataVencimento": "2023-05-10",
+    "nomePagador": "ANDREIA PATRICIA RODRIGUES",
+    "cpfCnpjPagador": "83529802034",
+    "enderecoPagador": "RUA VALDEMIRA RAYMUNDI, 385 ",
+    "dataLimiteDesconto": null,
+    "valorDesconto": 0,
+    "jurosMulta": 0.37,
+    "instrucao": "Mensalidade proporcional mais taxa de reabilitacao de plano\\rAPOS VENCIMENTO COBRAR MULTA DE    2.00 %.\\rAPOS VENCIMENTO COBRAR MORA DIARIA DE R$ 0.37.\\r",
+    "informativo": "Mensalidade proporcional mais taxa de reabilitacao de plano\\r",
+    "codigoBarra": "74894934600000113251123100258202681073195104",
+    "codigoBeneficiarioFinal": null,
+    "txid": "5506e3e54aa741888615f9ee3ac9cf21",
+    "qrCode": "00020101021226910014br.gov.bcb.pix2569pix-qrcode.sicredi.com.br/qr/v2/cobv/5407d3b232654165a0a986455e78e9785204000053039865406113.255802BR5906OK NET6008BRASILIA62070503***6304A4B0"
+}
+
+[{"seuNumero":"19166","nossoNumero":"221000170","nomePagador":"RENATO DE SOUZA LISBOA","valor":"169.8","valorLiquidado":"0","dataEmissao":"2022-11-22","dataVencimento":"2023-04-10","situacao":"EM CARTEIRA"}]

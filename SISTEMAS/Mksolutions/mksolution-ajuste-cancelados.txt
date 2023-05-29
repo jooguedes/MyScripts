@@ -1,0 +1,23 @@
+from apps.admcore import models 
+from django.db.models import F,Q
+for i in l:
+    f = i.strip()
+    nome = f.split(f.split()[-2:][0])[0].upper().strip()
+    #print('analisando cliente %s' %nome)
+    for c in models.Cliente.objects.filter(Q(pessoa__nome__unaccent__startswith=nome)):
+        if c.clientecontrato_set.count() == 1 and c.clientecontrato_set.filter(servicointernet__login__startswith='cancelado').count() == 1:
+              s = c.clientecontrato_set.all()[0].servicointernet_set.all()[0]
+              dados = f.split()[-2:]
+              login = dados[0]
+              senha = dados[1]
+              print nome, s.login,s.login_password, login,senha
+              try:
+                  s.login=login
+                  s.login_password=senha
+                  s.save()
+              except Exception, e:
+                  print(e)
+
+
+
+

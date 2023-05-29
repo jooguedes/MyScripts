@@ -1,0 +1,34 @@
+echo "" > create
+echo "create table controllr.client(" >> create
+head -n 1 controllr.client.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.contract(" >> create; 
+head -n 1 controllr.contract.csv | sed "s/;/ text,/g" >> create 
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.radius_plans(" >> create
+head -n 1 controllr.radius_plans.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.invoice(" >> create
+head -n 1 controllr.invoice.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table controllr.network_cpe(" >> create
+head -n 1 controllr.network_cpe.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+echo "create table radius.sessions(" >> create
+head -n 1 radius.sessions.csv | sed "s/;/ text,/g" >> create
+echo "text);" >> create
+echo "" >> create
+
+for i in controllr.client.csv controllr.contract.csv controllr.network_cpe.csv controllr.invoice.csv controllr.radius_plans.csv radius.sessions.csv; do cp $i /tmp; done 
+
+COPY controllr.client FROM '/tmp/controllr.client.csv' DELIMITER ';' CSV;
+COPY controllr.contract FROM '/tmp/controllr.contract.csv' DELIMITER ';' CSV;
+COPY controllr.network_cpe FROM '/tmp/controllr.network_cpe.csv' DELIMITER ';' CSV;
+COPY controllr.invoice FROM '/tmp/controllr.invoice.csv' DELIMITER ';' CSV;
+COPY controllr.radius_plans FROM '/tmp/controllr.radius_plans.csv' DELIMITER ';' CSV;
+COPY radius.sessions FROM '/tmp/radius.sessions.csv' DELIMITER ';' CSV;

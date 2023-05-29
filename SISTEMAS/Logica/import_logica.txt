@@ -1,0 +1,207 @@
+cat backup.sql  |  grep "^COPY"  | sed "s/COPY/CREATE TABLE/g" | sed "s/,/ text,/g" | sed "s/) FROM stdin/ text)/g" | psql -U postgres -h localhost -d logica_fiilnet
+psql -U postgres -h localhost -d logica_fiilnet -f backup.sql
+
+
+COPY (
+select p.cod_pessoa,
+       cpc.cod_pessoa_contrato,
+       case when p.pessoa_juridica::text = 't' then 'PJ' else 'PF' end as nome_pessoa, 
+       case when p.pessoa_juridica::text = 't' then p.razao_social else p.nome_pessoa end as nome_pessoa, 
+       p.cpf_cnpj,
+       p.rg,
+       '' as profissao,
+       p.sexo,
+       p.data_nascimento,
+       p.endereco as cliente_endereco,
+       p.numero as cliente_numero,
+       p.complemento as cliente_complemento,
+       bc.bairro as cliente_bairro,
+       p.cep as cliente_cep,
+       cid.nome_cidade as cliente_cidade,
+       cid.uf as cliente_uf,
+       cpc.endereco as contrato_endereco,
+       cpc.numero as contrato_numero,
+       cpc.complemento as contrato_complemento,
+       bc2.bairro as contrato_bairro,
+       cpc.cep as contrato_cep,
+       cid2.nome_cidade as contrato_cidade,       
+       cid2.uf as contrato_uf,
+       p.telefone,
+       p.telefone_2,
+       p.email,
+       p.observacao,
+       p.data_cadastro,
+       p.data_cadastro,
+       '' as servidor,
+       pcc.username as login,
+       pcc.senha as senha,
+       produto.nome_produto as plano,
+       produto.preco_venda as valor,
+       plano.velocidade_download as download,
+       plano.velocidade_upload as upload,
+       'pppoe' as tipoconexao,
+       pcc.ip_fixo,
+       pcc.mac,
+       cpc.dia_vencimento,
+       case when cpc.cod_status_contrato::text = '1' then 'ativo' else 'cancelado' end as status_contrato,
+       case when csc.ativo::text = 't' then 'ativo' else 'suspenso' end as status_servico,
+       cpc.created_at as data_cadastro,
+       cpc.data_ativacao as data_ativacao,
+       cpc.data_cancelamento as data_cancelamento,
+       cpc.updated_at as data_alteracao,
+       pcc.senha_central,
+       p.referencia as cliente_referencia,
+       cpc.ponto_referencia as contrato_referencia
+
+from pessoa p 
+inner join bairro_cidade bc on (p.cod_bairro_cidade=bc.cod_bairro_cidade)
+inner join cidade cid on (cid.cod_cidade = bc.cod_cidade)
+inner join contratos_pessoa_contrato cpc on (cpc.cod_pessoa=p.cod_pessoa)
+inner join bairro_cidade bc2 on (cpc.cod_bairro_cidade=bc2.cod_bairro_cidade)
+inner join cidade cid2 on (cid2.cod_cidade = bc2.cod_cidade)
+inner join provedor_configuracao_cliente pcc on (pcc.cod_pessoa_contrato=cpc.cod_pessoa_contrato)
+inner join contratos_servicos_contrato csc on (csc.cod_pessoa_contrato=cpc.cod_pessoa_contrato)
+inner join produtos_produto produto on (produto.cod_produto=csc.cod_produto)
+inner join provedor_plano_acesso plano on (plano.cod_produto=produto.cod_produto)
+order by p.cod_pessoa, csc.cod_servico_contrato desc 
+
+) TO '/tmp/logica-clientes.csv'  WITH DELIMITER '|' CSV HEADER;
+-
+-
+-
+-and csc.cod_status_servico::integer!=5
+-
+-1 - ativo / suspenso
+-2 - cancelado
+-
+-contratos_servicos_contrato:ativo -  sttus do servico
+-
+COPY (
+select 
+cod_convenio_bancario,
+b.cod_febraban,
+agencia,
+dv_agencia,
+conta_corrente,
+dv_conta_corrente,
+convenio,
+carteira,
+codigo_carteira,
+percentual_multa,
+percentual_juros,
+taxa_boleto,
+inicio_nosso_numero
+from financeiro_convenio_bancario c
+inner join financeiro_banco b on (b.cod_banco=c.cod_banco)
+) TO '/tmp/logica-portadores.csv'  WITH DELIMITER '|' CSV HEADER;
+-
+-
+
+60
+62
+63
+64
+46
+65
+70
+59
+67
+66
+68
+69
+
+COPY (
+select 
+con.cod_convenio_bancario,
+p.cod_pessoa,
+cpc.cod_pessoa_contrato,
+case when p.pessoa_juridica::text = 't' then p.razao_social else p.nome_pessoa end as nome_pessoa, 
+b.data_vencimento as data_vencimento,
+b.data_pagamento as data_pagamento,
+b.valor_pagamento as valor_pagamento,
+case when b.valor_total::numeric > 0.00 then b.valor_total else cp.valor end as valor_total,
+b.cod_boleto,
+b.cod_nosso_numero,
+b.cod_status_pagamento as status,
+cp.descritivo
+FROM financeiro_boletos b
+inner join financeiro_convenio_bancario con ON (con.cod_convenio_bancario=b.cod_convenio_bancario)
+inner join financeiro_cobranca cob on (cob.cod_cobranca=b.cod_cobranca)
+inner join contratos_parcelas_lancamento  cpl on (cpl.cod_lancamento=cob.cod_lancamento)
+inner join contratos_parcelas cp on (cp.cod_parcela = cpl.cod_parcela)
+inner join contratos_servicos_contrato csc on (csc.cod_servico_contrato = cp.cod_servico_contrato )
+inner join contratos_pessoa_contrato cpc on (cpc.cod_pessoa_contrato=csc.cod_pessoa_contrato)
+inner join pessoa p on (p.cod_pessoa=cpc.cod_pessoa)
+WHERE (b.valor_total::numeric > 0.00 or cp.valor::numeric > 0.00)
+AND con.cod_convenio_bancario::integer=60 and data_pagamento <> '' and data_pagamento is not null
+order by p.cod_pessoa,b.data_vencimento
+) TO '/tmp/logica-titulos-60.csv'  WITH DELIMITER '|' CSV HEADER;
+
+
+COPY (select cod_boleto,token_boleto_gerencianet,codigo_carne_gerencianet from financeiro_boletos where token_boleto_gerencianet is not null) TO '/tmp/logica-titulos-gerencianet.csv' DELIMITER '|' CSV HEADER;
+
+COPY ( 
+select cod_setor,nome_setor
+from provedor_suporte_setor where ativo='t'
+) TO '/tmp/logica-chamados-setor.csv'  WITH DELIMITER '|' CSV HEADER;
+
+
+COPY ( 
+select 
+cod_suporte_tipo,
+tx_tipo
+FROM provedor_suporte_tipos
+) TO '/tmp/logica-chamados-tipos.csv'  WITH DELIMITER '|' CSV HEADER;
+
+COPY (
+select c.cod_pessoa as cod_pessoa,
+       case when p.pessoa_juridica::text = 't' then p.razao_social else p.nome_pessoa end as nome_pessoa, 
+       cpc.cod_pessoa_contrato as contrato,
+       c.cod_chamado,
+       c.cod_setor,
+       c.cod_tipo_chamado,
+       tc.tx_tipo,
+       c.dt_chamado as data_chamado,
+       c.dt_fechamento as data_fechamento,
+       c.dt_prazo as data_agendamento,
+       c.fl_prioridade,
+       c.origem,
+       c.notificado,
+       c.usuario,
+       c.ligar_antes,
+       c.tx_chamado as problema,
+       c.tx_solucao as solucao
+
+from provedor_suporte_chamado c 
+inner join provedor_suporte_tipos tc on (tc.cod_suporte_tipo = c.cod_tipo_chamado)
+inner join pessoa p on (c.cod_pessoa=p.cod_pessoa)
+inner join contratos_pessoa_contrato cpc on (cpc.cod_pessoa=p.cod_pessoa)
+inner join contratos_servicos_contrato csc on (csc.cod_pessoa_contrato=cpc.cod_pessoa_contrato and csc.cod_servico_contrato = c.cod_servico_contrato)
+) TO '/tmp/logica-chamados.csv'  WITH DELIMITER '|' CSV HEADER;
+
+
+cat dblogica.bkp | grep COPY | sed "s/COPY/CREATE TABLE/g" | sed "s/,/ text,/g" | sed "s/) FROM stdin/ text)/g" | psql -U postgres -h localhost -d dbprovedorx
+sed -i "s/\\\N//g" *.csv.*
+#for i in $(ls *.csv); do iconv -f iso8859-1 -t utf-8 $i > $i.utf8;  done 
+
+
+
+#VER QUAIS OS PORTADORES DA BASE (TESTADO EM BASE COM BANCOS CONVENCIONAIS APENAS)
+select b.cod_banco, b.banco, f.cod_convenio_bancario from financeiro_banco b inner join  financeiro_convenio_bancario f on (f.cod_banco=b.cod_banco)
+
+-[ RECORD 1 ]---------+---------------------
+cod_banco             | 16
+banco                 | BANCO BRADESCO S.A.
+cod_convenio_bancario | 58
+-[ RECORD 2 ]---------+---------------------
+cod_banco             | 16
+banco                 | BANCO BRADESCO S.A.
+cod_convenio_bancario | 57
+-[ RECORD 3 ]---------+---------------------
+cod_banco             | 32
+banco                 | BANCO DO BRASIL S.A.
+cod_convenio_bancario | 59
+-[ RECORD 4 ]---------+---------------------
+cod_banco             | 995
+banco                 | INTERMEDIADORES
+cod_convenio_bancario | 60

@@ -1,0 +1,240 @@
+SELECT 
+c.id,
+c.nome,
+c.nome_fantasia,
+c.data_nascimento,
+c.sexo,
+c.estado_civil,
+c.tipo_pessoa,
+c.exterior,
+c.documento_exterior,
+c.cpf,
+c.cnpj,
+c.ruc,
+c.telefone,
+c.celular,
+c.email,
+c.email2,
+c.rg,
+c.nome_pai,
+c.nome_mae,
+c.profissao,
+c.local_trabalho,
+c.inscricao_estadual,
+c.cep,
+c.endereco,
+c.endereco_numero,
+c.endereco_complemento,
+c.endereco_bairro,
+c.endereco_referencia,
+c.cidade_ibge,
+c.cidade,
+c.localidade,
+c.uf,
+c.pais,
+c.coordenadas_gps,
+c.cobranca_igual,
+c.cobranca_cep,
+c.cobranca_endereco,
+c.cobranca_endereco_numero,
+c.cobranca_endereco_complemento,
+c.cobranca_endereco_bairro,
+c.cobranca_endereco_referencia,
+c.cobranca_cidade_ibge,
+c.cobranca_cidade,
+c.cobranca_localidade,
+c.cobranca_uf,
+c.cobranca_pais,
+c.cobranca_coordenadas_gps,
+c.email_cobranca,
+c.email_aniversario,
+c.email_outros,
+c.data_cadastro,
+c.data_alteracao,
+ci.endereco_instalacao_igual_principal,
+ci.instalacao_cep,                     
+ci.instalacao_endereco,                
+ci.instalacao_endereco_numero,         
+ci.instalacao_endereco_complemento,    
+ci.instalacao_endereco_bairro,         
+ci.instalacao_endereco_referencia ,    
+ci.instalacao_cidade_ibge,             
+ci.instalacao_cidade,                  
+ci.instalacao_localidade,              
+ci.instalacao_uf,                      
+ci.instalacao_coordenadas_gps,         
+ci.endereco_cobranca_igual_principal,
+ci.cobranca_cep,                     
+ci.cobranca_endereco,                
+ci.cobranca_endereco_numero,         
+ci.cobranca_endereco_complemento,    
+ci.cobranca_endereco_bairro,         
+ci.cobranca_endereco_referencia,     
+ci.cobranca_cidade_ibge,             
+ci.cobranca_cidade,                  
+ci.cobranca_localidade,              
+ci.cobranca_uf,                      
+ci.cobranca_coordenadas_gps,
+ci.dia_vencimento,
+ci.valor_desconto,
+ci.valor_acrescimo,      
+ci.tipo_conexao,
+ci.pppoe_login,
+ci.pppoe_senha,
+ci.pppoe_ip,
+ci.ativo,
+ci.isento,
+ci.status,
+intp.nome,
+intp.valor,
+intp.valor_servico,
+intp.desconto_antecipacao,
+intp.instrucoes_boleto,
+intp.descricao_nota_fiscal, 
+intp.velocidade_down,
+intp.velocidade_down_garantia,
+intp.velocidade_up,
+intp.velocidade_up_garantia,
+intp.prioridade,   
+intp.burst_up,             
+intp.burst_up_threshold,   
+intp.burst_up_time,        
+intp.burst_down,           
+intp.burst_down_threshold, 
+intp.burst_down_time,      
+intp.lista_dinamica,       
+intp.uso_simultaneo, 
+ci.id
+FROM clientes c
+INNER JOIN clientes_has_internetplanos ci ON (c.id = ci.clientes_id)
+INNER JOIN internetplanos intp on (ci.internetplanos_id=intp.id)
+INNER JOIN bancos b on (b.id=ci.bancos_id)
+ORDER BY ci.id desc
+INTO OUTFILE '/tmp/duobox-clientes.csv' CHARACTER SET latin1 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+select 
+c.nome as cliente,
+ci.id as contrato,
+ci.pppoe_login,
+p.id as idproduto,
+p.nome as nomeproduto,
+TRIM(ps.endereco_mac) as mac,
+TRIM(ps.numero_serie) as serial,
+pci.quantidade,
+pci.tipo,
+pci.data
+
+
+
+FROM clientes c
+INNER JOIN clientes_has_internetplanos ci ON (c.id = ci.clientes_id)
+INNER JOIN produtos_clientes_internet pci ON (pci.clientes_has_internetplanos_id=ci.id and tipo='COMODATO') 
+INNER JOIN produtos p ON (p.id = pci.produtos_id)
+INNER JOIN produtos_seriais ps ON (ps.produtos_id=p.id and ps.id=pci.produtos_seriais_id)
+order by pci.data desc;
+
+# latin1 csv 
+# convert no-ascii to utf8
+
+select 
+c.id as cliente_id,
+co.origem_id,
+co.bancos_id,
+co.nossonumero,
+co.sequencial,
+co.data_gerado,
+co.data_vencimento,
+co.data_hora_baixa,
+co.data_pagamento,
+co.data_cancelado,
+co.motivo_cancelado,
+co.valor,
+co.valor_pago,
+co.transacao_id as gw_idtransacao,
+co.gerencianet_cobranca_chave as gw_chave,
+co.gerencianet_carnet_chave as gw_carne_chave
+FROM cobrancas co 
+INNER JOIN clientes c ON (c.id=co.clientes_id) 
+where co.bancos_id=3
+order by c.id, co.origem_id
+INTO OUTFILE '/tmp/duobox-titulos-cobranca-gerencianet-pix.csv' CHARACTER SET latin1 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+select 
+c.id as cliente_id,
+co.origem_id,
+co.bancos_id,
+co.nossonumero,
+co.sequencial,
+co.data_gerado,
+co.data_vencimento,
+co.data_hora_baixa,
+co.data_pagamento,
+co.data_cancelado,
+co.motivo_cancelado,
+co.valor,
+co.valor_pago,
+co.transacao_id as gw_idtransacao,
+co.gerencianet_cobranca_chave as gw_chave,
+co.gerencianet_carnet_chave as gw_carne_chave
+FROM cobrancas co 
+INNER JOIN clientes c ON (c.id=co.clientes_id) 
+where co.bancos_id=7
+and co.data_cancelado != '0000-00-00'
+order by c.id, co.origem_id
+INTO OUTFILE '/tmp/duobox-titulos-cancelados-4.csv' CHARACTER SET latin1 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+########teste
+select 
+c.nome as nome,
+c.id as cliente_id,
+co.origem_id,
+co.bancos_id,
+co.nossonumero,
+co.sequencial,
+co.data_gerado,
+co.data_vencimento,
+co.data_hora_baixa,
+co.data_pagamento,
+co.data_cancelado,
+co.motivo_cancelado,
+co.valor,
+co.valor_pago,
+co.transacao_id as gw_idtransacao
+FROM cobrancas co 
+INNER JOIN clientes c ON (c.id=co.clientes_id) 
+where co.bancos_id=1
+order by c.id, co.origem_id
+INTO OUTFILE '/tmp/duobox-bradesco.csv' CHARACTER SET latin1 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+
+
+
+
+
+# RODAR ROTINA ABAIXO APENAS SE FOR DUOBOX MUITO ANTIGO, SENAO NAO CONSIDERAR.
+select 
+c.id as cliente_id,
+bo.origem_id,
+bo.bancos_id,
+bo.nosso_numero,
+bo.numero_documento,
+bo.data_gerado,
+bo.data_vencimento,
+bo.data_hora_baixa,
+bo.data_pagamento,
+bo.data_cancelado,
+bo.motivo_cancelado,
+bo.valor_documento,
+bo.valor_pago
+FROM boletos bo 
+INNER JOIN clientes c ON (c.id=bo.clientes_id) 
+where bo.bancos_id=7
+order by c.id, bo.origem_id
+INTO OUTFILE '/tmp/duobox-boletos-7.csv' CHARACTER SET latin1 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
+
+
+
+
+select * from bancos \G;
