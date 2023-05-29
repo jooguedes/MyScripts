@@ -1,0 +1,46 @@
+from apps.admcore import models as admmodels
+import csv
+
+with open('/tmp/vigo-clientes-banda-larga.csv', 'rb') as csvfile:
+    conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
+    for row in conteudo:
+        idcontrato = int(row[0])
+        cliente = cliente_check = admmodels.Cliente.objects.filter(id=idcontrato)
+        
+        new_servico = admmodels.ServicoInternet()
+        new_servico.clientecontrato = new_contrato 
+        new_servico.status = status_s
+        if admmodels.ServicoInternet.objects.filter(login__iexact=login).count() > 0:
+            print u'Já existe serviço com o login %s. Ajustando login: %s%s' %(login,
+                                                                            login,
+                                                                            str(new_contrato.id))
+            login += str(count)
+        new_servico.login= login
+        new_servico.endereco = new_endereco_inst
+        new_servico.login_password=senha 
+        new_servico.login_password_plain=senha_txt
+        new_servico.central_password=senhacentral
+        if admmodels.ServicoInternet.objects.filter(Q(mac_dhcp=mac)).count() == 0:
+            new_servico.mac_dhcp = mac
+
+        if ip and admmodels.ServicoInternet.objects.filter(Q(ip=ip)).count() == 0:
+            new_servico.ip = ip 
+        new_servico.tipoconexao = conexao_tipo
+        new_servico.nas = nas
+        new_servico.planointernet = planointernet
+        new_servico.planovelocidade = planovelocidade
+        new_servico.modoaquisicao = 1 if comodato == True else 0
+        new_servico.data_cadastro=data_cadastro
+        new_servico.observacao = conn_obs
+        try:
+            new_servico.save()
+        
+    
+            new_servico.data_cadastro=data_cadastro
+            new_servico.login_password_plain=senha_txt
+            new_servico.login_password=senha
+            count +=1
+            new_servico.save()
+        except Exception as e:
+            print(e)
+            break
