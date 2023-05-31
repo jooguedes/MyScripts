@@ -1,15 +1,12 @@
 criar um banco;
 
 
-
 create database dbturbonetjardin_old owner userturbonetjardin;
 create extension unaccent;
 create extension pg_trgm;
 
 
 psql -U postgres -d dbturbonetjardin_old -h localhost -f backup_dbturbonetjardin_20230509113803.sql
-
-
 
 
 psql -U postgres -h localhost -c "alter database dbhokinet rename to dbhokinet_old_old";
@@ -21,5 +18,4 @@ psql -U postgres -d dbhokinet -h localhost -c "create extension pg_trgm";
 psql -U postgres -d dbhokinet -h localhost -f 
 
 
-
-ids = [10, 14, 1, 5, 18, 12, 20, 19, 22, 23, 15, 17]
+python backup.py [chave ssh] [arquivo.enc] [arquivo.txt]''

@@ -10,10 +10,10 @@ if sys.version_info < (3,0):
     reload(sys)
     sys.setdefaultencoding('utf-8')
 tf = titulofunc.TituloFunc()
-portador = fmodels.Portador.objects.get(pk=1)
+portador = fmodels.Portador.objects.get(pk=2)
 fnum = lambda n: re.sub('[^0-9.]','',n) 
 #portador.titulo_set.all().delete()
-with open('/tmp/Conv-cobrancas-rrnetma-asaas.csv', 'rb') as csvfile:
+with open('/tmp/beesweb-cobrancas-juno.csv', 'rb') as csvfile:
     conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
     for row in conteudo:
         print(row)

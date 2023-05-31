@@ -110,11 +110,12 @@ SELECT DISTINCT
 	c.CLI_IP                      ,
 	c.CLI_OBS_CONTRATO            ,
 	c.CLI_CHAVE_CENTRAL           ,
-	c.BAN_CODIGO as CODIGO PLANO  ,
+	c.BAN_CODIGO as CODIGO_PLANO  ,
 	c.CLI_MEIO                    ,
 	c.TIPO_CLIENTE                ,
 	mm.MOV_DESC                   ,
-	mm.MOV_DATA
+	mm.MOV_DATA                   ,
+	c.TOR_CODIGO
 FROM clientes2 c 
 LEFT JOIN movimento_material mm ON (mm.CLI_LOGIN = c.CLI_LOGIN)
 INTO OUTFILE '/tmp/scut-clientes.csv' CHARACTER SET utf8

@@ -65,8 +65,8 @@ if args.arquivo:
             nosso_numero = row[0]
             nosso_numero_f = row[0]
             demonstrativo = row[5]
-            data_documento = strdate(row[4].split()[0])
-            data_vencimento = strdate2(row[5])
+            data_documento = strdate(row[9].split()[0])
+            data_vencimento = strdate2(row[6])
             data_pagamento = None
             data_baixa = None
             data_cancela = None
@@ -75,7 +75,7 @@ if args.arquivo:
             usuario_b = None
             usuario_c = None
 
-            valor = row[6].replace('.', '').replace(',', '.').strip()
+            valor = row[5].replace('.', '').replace(',', '.').strip()
 
             #if not strdate2(row[7]):
             #    continue 
@@ -102,7 +102,7 @@ if args.arquivo:
                             novo_titulogateway.titulo = titulo
                             novo_titulogateway.gateway = titulo.portador.gateway_boleto
                             novo_titulogateway.idtransacao = row[0]
-                            novo_titulogateway.link = row[13]
+                            novo_titulogateway.link = row[12]
                             print(novo_titulogateway.link)
                             try:
                                 novo_titulogateway.save()
@@ -120,7 +120,7 @@ if args.arquivo:
                             # 01/01/2023 - 30/06/2023
                             # 01/07/2023 - 31/12/2023
                             
-                            #   python atualiza-galaxpay.py --settings=sgp.stillo.settings --portador=2 --arquivo=
+                            #   python atualiza-galaxpay.py --settings=sgp.wendor.settings --portador=2069 --arquivo=
                             #   OBS.: ORDERNAR NUMERO DOCUMENTO DO MAIOR PARA O MENOR
                 except:
                     continue

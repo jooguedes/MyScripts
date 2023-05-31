@@ -3,58 +3,45 @@ from apps.cauth import models as authmodels
 import csv
 import re 
 
-PORTADOR = 2
-
 usuario = authmodels.User.objects.get(username='sgp')
 
-def strdate(d):
-    try:
-        d,m,y = d.strip().split('/')
-        return '%s-%s-%s' %(y,m,d)
-    except:
-        return None
-
-with open('/tmp/webmikrotik-faturas-binterno.csv', 'rb') as csvfile:
+with open('/tmp/ixc-titulos.csv.utf8', 'rb') as csvfile:
     conteudo = csv.reader(csvfile, delimiter=str('|'), quotechar=str('"'))
     for row in conteudo:
-        n_documento = row[0]
-        valorpago = row[9].replace('.','').replace(',','.')
-        data_pagamento = strdate(row[4])
-        data_vencimento = strdate(row[3])
-        situacao = row[12]
+        print(row[15])
+        if row[15].strip() == '10':
+            try:
+                n_documento = int(row[5])
+            except:
+                n_documento = int(row[4])
+            valorpago = row[9]
+            data_pagamento = row[10]
+            data_vencimento = row[12]
+            if not row[12]:
+                data_vencimento = row[11]
+            try:
+                t = fmodels.Titulo.objects.filter(portador=10, numero_documento=n_documento).exclude(status=fmodels.MOVIMENTACAO_CANCELADA)
+            except Exception as e:
+                print(e)
+                break
+            print('Passei aqui')
 
-        try:
-            t = fmodels.Titulo.objects.filter(portador=PORTADOR, numero_documento=n_documento)
-        except Exception as e:
-            print(e)
-            break
+            if len(t) > 0:
+                print(t)
+                if data_pagamento.strip() != '' and '0000-00-00' not in data_pagamento:
+                    t[0].valorpago = valorpago
+                    t[0].data_pagamento = data_pagamento
+                    if data_pagamento == '' or data_pagamento == '0000-00-00':
+                        t[0].data_pagamento = data_vencimento
+                    t[0].data_baixa = data_pagamento
+                    t[0].status = fmodels.MOVIMENTACAO_PAGA
+                    t[0].usuario_b = usuario
+                    t[0].usuario_c = None
 
-        if len(t) > 0:
-            if situacao.strip().lower() in ['liquidada']:
-                t[0].valorpago = valorpago
-                t[0].data_pagamento = data_pagamento
-                if data_pagamento == '' or data_pagamento == '0000-00-00':
-                    t[0].data_pagamento = data_vencimento
-                t[0].data_baixa = data_pagamento
-                t[0].status = fmodels.MOVIMENTACAO_PAGA
-                t[0].usuario_b = usuario
-                t[0].usuario_c = None
-
-            elif situacao.strip().lower() in ['cancelada', 'isenta']:
-                t[0].data_cancela = data_vencimento
-                t[0].status = fmodels.MOVIMENTACAO_CANCELADA
-                t[0].data_baixa = None
-                t[0].data_pagamento = None
-                t[0].usuario_b = None
-                t[0].usuario_c = usuario
-
-            elif situacao.strip().lower() in ['aguardando']:
-                t[0].data_baixa = None
-                t[0].data_pagamento = None
-
-            elif situacao.strip().lower() in ['vencida', 'vencido']:
-                t[0].data_baixa = None
-                t[0].data_pagamento = None
-                t[0].valorpago = None
-                t[0].usuario_b = None
-            t[0].save()
+                else:
+                    t[0].status = fmodels.MOVIMENTACAO_GERADA
+                    t[0].data_baixa = None
+                    t[0].data_pagamento = None
+                    t[0].valorpago = None
+                    t[0].usuario_b = None
+                t[0].save()

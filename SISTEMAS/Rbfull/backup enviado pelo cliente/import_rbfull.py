@@ -13,18 +13,22 @@ parser.add_argument('--sync',dest='sync_db', type=bool, help='Sync Database',def
 parser.add_argument('--nas', dest='nas_id', type=int, help='ID do NAS', required=False )
 parser.add_argument('--pop', dest='pop_id', type=int, help='ID do NAS', required=False )
 parser.add_argument('--portador', dest='portador_id', type=int, help='ID do PORTADOR',required=False)
+parser.add_argument('--paybox', dest='paybox', type=str, help='Arquivo importacao',required=False)
 parser.add_argument('--plans', dest='plans', type=str, help='Arquivo importacao',required=False)
 parser.add_argument('--subscribers', dest='subscribers', type=str, help='Arquivo importacao',required=False)
 parser.add_argument('--contracts', dest='contracts', type=str, help='Arquivo importacao',required=False)
+parser.add_argument('--charges', dest='charges', type=str, help='Arquivo importacao',required=False)
 args = parser.parse_args()
 
 '''
-python import_rbfull.py --settings=sgp.netbrava.settings --plans=
-python import_rbfull.py --settings=sgp.netbrava.settings --nas=2 --pop=3 --portador=1 --subscribers=  --contracts= --sync=1
-
+python import_rbfull.py --settings=sgp.wendor.settings --paybox=rbfull-paybox.csv
+python import_rbfull.py --settings=sgp.wendor.settings --plans=rbfull-plains.csv
+python import_rbfull.py --settings=sgp.wendor.settings --nas=2 --pop=3 --portador=1 --subscribers=  --contracts= --sync=1
+python import_rbfull.py --settings=sgp.wendor.settings --charges=rbfull-charges.csv --sync=1
 '''
 
 
+         
 PATH_APP = '/usr/local/sgp'
 
 if PATH_APP not in sys.path:
@@ -46,11 +50,11 @@ from apps.cauth import models as authmodels
 from apps.fiscal import models as fismodels, constants as fisconstants
 
 # Se já existir clientes na base adicionar os valores de increments
-addIdPlanos = 50
-addIdCliente = 1500
-addIdContrato = 1500
+addIdPlanos = 0
+addIdCliente = 0
+addIdContrato = 0
 # addNumeroOcorrencia = 0
-addStringLogin = 'import_rbfull_2325'
+addStringLogin = ''
 
 if args.portador_id:
   portador = fmodels.Portador.objects.get(pk=args.portador_id)
@@ -60,6 +64,9 @@ if args.nas_id:
 
 
 usuario = authmodels.User.objects.get(username='sgp')
+formapagamento = fmodels.FormaPagamento.objects.all()[0]
+planocontas = fmodels.CentrodeCusto.objects.get(codigo='01.01.01')
+
 if sys.version_info < (3,0):
     reload(sys)
     sys.setdefaultencoding('utf-8')
@@ -75,6 +82,43 @@ def strdate(d):
 
 contrato_obj = admmodels.Contrato.objects.filter(grupo__nome='fibra').order_by('-id')[0]
 grupo_obj = admmodels.Grupo.objects.filter(nome='fibra').order_by('-id')[0]
+
+
+
+if args.paybox:
+  with open(args.paybox, 'rb') as csvfile:
+      conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
+      for row in conteudo:
+        print(row)
+        if fmodels.Portador.objects.filter(id=row[0]).count() == 0:
+          new_portador = fmodels.Portador()
+          new_portador.id = row[0]
+          new_portador.descricao = row[3]
+          if row[3].strip() == '':
+              new_portador.descricao = 'BANCO_%s'%row[0]
+          new_portador.codigo_banco = '999'
+          new_portador.agencia = row[5] or '0'
+          new_portador.agencia_dv = ''
+          new_portador.conta = row[6] or '0'
+          new_portador.conta_dv = ''
+          new_portador.convenio = '0'
+          new_portador.carteira = '0'
+          new_portador.cedente = 'PROVEDOR X'
+          new_portador.cpfcnpj = '0'
+          try:
+            new_portador.save()
+          except Exception as e:
+             print('Erro ao salvar PORTADOR, ', e)
+             break
+
+          new_pontorecebimento = fmodels.PontoRecebimento()
+          new_pontorecebimento.descricao = row[3]
+          if row[3].strip() == '':
+              new_pontorecebimento.descricao = 'BANCO_%s'%row[0]
+          new_pontorecebimento.portador = new_portador
+          new_pontorecebimento.empresa = admmodels.Empresa.objects.all()[0]
+          new_pontorecebimento.save()
+
 
 if args.plans:
   with open(args.plans, 'rb') as csvfile:
@@ -160,9 +204,13 @@ if args.subscribers and args.contracts:
         conteudo= csv.reader(csvfile, delimiter=str('|'), quotechar=str('"'))
         indice=0
         for row in conteudo:
+            try:
+              plano_id = int(row[5])+addIdPlanos
+            except:
+               plano_id = 8641
             contrato={
                 'id': int(row[0])+addIdContrato,
-                'plano_id': int(row[5])+addIdPlanos,
+                'plano_id': plano_id,
                 'cliente_id': int(row[6])+addIdCliente,
                 'login': '%s%s'%(row[10],addStringLogin),
                 'senha': row[11],
@@ -518,3 +566,112 @@ for p in admmodels.Pop.objects.all():
       plano.pops.add(p)
       for n in nmodels.NAS.objects.all():
           n.pops.add(p)
+
+
+
+
+
+if args.charges:
+  with open(args.charges, 'rb') as csvfile:
+      conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
+      for row in conteudo:          
+        cliente_id = int(row[3])+addIdCliente
+        cliente = admmodels.Cliente.objects.filter(id=cliente_id)
+        if cliente:
+            print("Esse é meu cliente: ", cliente)
+            cliente = cliente[0]
+            contrato = cliente.clientecontrato_set.all()
+            if contrato:
+                contrato = contrato[0]
+                cobranca = contrato.cobranca
+                
+                numero_documento = row[0]
+                nosso_numero = row[0]
+                nosso_numero_f = row[0]
+                demonstrativo = row[22]
+                data_documento = row[43].split()[0]
+                data_vencimento = row[24]
+                if row[29].strip() != '':
+                  data_pagamento = row[29].split()[0]
+                else:
+                   data_pagamento = None
+                data_baixa = data_pagamento
+                data_cancela = None
+                status = fmodels.MOVIMENTACAO_GERADA
+                valorpago = None
+                usuario_b = None
+                usuario_c = None
+                juros = ''
+                codigo_barras=row[15]
+                linha_digitavel=row[15]
+                valor = row[27].replace('.','').replace(',','.')
+                portador = fmodels.Portador.objects.get(pk=row[5])
+
+                if data_pagamento != None:
+                    valorpago = row[11].replace('.','').replace(',','.')
+                    status = fmodels.MOVIMENTACAO_PAGA
+                    usuario_b = usuario
+                    usuario_c = None
+                    valorpago = row[31]
+                    if valorpago.strip() == '':
+                       valorpago = valor
+
+                elif row[46].strip() != '':
+                    data_cancela = data_vencimento
+                    status = fmodels.MOVIMENTACAO_CANCELADA
+                    data_baixa = None
+                    data_pagamento = None
+                    usuario_b = None
+                    usuario_c = usuario
+
+                desconto = 0.00
+                linha_digitavel = ''
+                codigo_carne = ''
+
+                if nosso_numero:
+                    print('entrei no nosso numero')
+                    if fmodels.Titulo.objects.filter(nosso_numero=nosso_numero,portador=portador).count() == 0:
+                        dados = {'cliente': cliente,
+                                  'cobranca': cobranca,
+                                  'portador': portador,
+                                  'codigo_barras':codigo_barras, 
+                                  'linha_digitavel':linha_digitavel,
+                                  'formapagamento': formapagamento,
+                                  'centrodecusto': planocontas,
+                                  'modogeracao': 'l',
+                                  'usuario_g': usuario,
+                                  'usuario_b': usuario_b,
+                                  'usuario_c': usuario_c,
+                                  'demonstrativo': demonstrativo,
+                                  'data_documento': data_documento,
+                                  'data_alteracao': data_documento,
+                                  'data_vencimento': data_vencimento,
+                                  'data_cancela': data_cancela,
+                                  'data_pagamento': data_pagamento,
+                                  'data_baixa': data_baixa,
+                                  'numero_documento': numero_documento,
+                                  'nosso_numero': nosso_numero,
+                                  'nosso_numero_f': nosso_numero_f,
+                                  'linha_digitavel': linha_digitavel,
+                                  'codigo_barras': codigo_barras,
+                                  'valor': valor,
+                                  'valorpago': valorpago,
+                                  'desconto': desconto,
+                                  'status': status,
+                                  'observacao': codigo_carne,
+                                  'djson': {'juros': juros }
+                                  }
+                        if not args.sync_db:
+                            print(dados)
+                        else:
+                            try:
+                                titulo = fmodels.Titulo(**dados)
+                                titulo.save()
+                                titulo.data_documento=data_documento
+                                titulo.data_alteracao=data_documento
+                                titulo.save()
+
+                            except Exception as e:
+                                print "Erro cadastrar",e,dados
+                    else:
+                        print("Boleto já foi importado ",cliente,nosso_numero,data_vencimento,portador)

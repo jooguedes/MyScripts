@@ -20,8 +20,8 @@ parser.add_argument('--suportesclientes', dest='suportesclientes', type=str, hel
 args = parser.parse_args()
 
 
-#   python import_beesweb.py --settings=sgp.slfibra.settings --pop=1 --portador=1 --arquivo=
-#   python import_beesweb.py --settings=sgp.slfibra.settings --suportesclientes= --suportes=
+#   python import_beesweb.py --settings=sgp.maxlink.settings --pop=1 --portador=1 --arquivo=
+#   python import_beesweb.py --settings=sgp.maxlink.settings --suportesclientes= --suportes=
 
 PATH_APP = '/usr/local/sgp'
 
@@ -65,16 +65,19 @@ def convertdata(d):
             return '%s-%s-%s' %(y,m,d)
         return d
     return None
-idcontrato = 100
-idcliente = 100
+
+add_id_cliente = 0
+add_id_contrato = 1
+add_string_login = ''
+
+
 m = manage.Manage()
 if args.arquivo:
     with open(args.arquivo, 'rb') as csvfile:
         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
         for row in conteudo:
             print row
-            idcliente = int(row[0])+100
-            idcontrato = idcontrato
+            idcliente = int(row[0])+add_id_cliente
             nome = row[1]
             plano = row[22]
             try:
@@ -84,7 +87,7 @@ if args.arquivo:
             cpfcnpj = row[7]
             #if not cpfcnpj:
                 #cpfcnpj = row[6]
-            login = '%s_import'%row[24]
+            login = '%s%s'%(row[24], add_string_login)
 
             if row[24] == '':
                 login = 'SEM_LOGIN_%s'%idcliente
@@ -412,8 +415,11 @@ if args.arquivo:
                 
                 
                 # Contrato 
+                if admmodels.ClienteContrato.objects.filter(id=add_id_contrato).count() > 0:
+                    add_id_contrato += admmodels.ClienteContrato.objects.all().order_by('-id')[0]
+                    
                 new_contrato = admmodels.ClienteContrato()
-                new_contrato.id = idcontrato
+                new_contrato.id = add_id_contrato
                 new_contrato.cliente = new_cliente 
                 new_contrato.pop = pop_default
                 new_contrato.cobranca = new_cobranca
@@ -423,7 +429,7 @@ if args.arquivo:
                 new_contrato.data_alteracao = data_cadastro
                 try:
                     new_contrato.save()
-                    idcontrato += 1
+                    add_id_contrato += 1
                 except Exception as a:
                     print('Erro ao cadastrar CLIENTECONTRATO, erro: ', a)
                 

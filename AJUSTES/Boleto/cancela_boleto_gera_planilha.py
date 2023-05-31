@@ -37,3 +37,6 @@ if CANCELAR:
                                             motivocancela="Boleto cancelado mediante ocorrência importação-protocolo: 230421120402, autorizaddo pelo Sr(a). Marcos A Silva.")
 
 print(url)
+
+
+

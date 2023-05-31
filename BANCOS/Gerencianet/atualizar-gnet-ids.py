@@ -24,7 +24,7 @@ formapagamento = fmodels.FormaPagamento.objects.all()[0]
 planocontas = fmodels.CentrodeCusto.objects.get(codigo='01.01.01')
 
 path = '/tmp/beesweb-gnet.csv'
-PORTADOR = 1
+PORTADOR = 2
 
 def strdate(d):
     try:

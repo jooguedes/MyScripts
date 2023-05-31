@@ -5,7 +5,7 @@ from django.db import transaction
 import csv
 
 file = '/tmp/beesweb-gnet.csv'
-PORTADOR = 1
+PORTADOR = 2
 
 sgpuser = User.objects.get(username="sgp")
 data_cadastro = date.today()
