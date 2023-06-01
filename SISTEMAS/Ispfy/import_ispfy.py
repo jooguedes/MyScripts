@@ -27,7 +27,7 @@ parser.add_argument('--loginstatus', dest='loginstatus', type=str, help='criar d
 parser.add_argument('--pagar', dest='pagar', type=str, help='criar contas a pagar',required=False)
 parser.add_argument('--caixas', dest='caixas', type=str, help='Criar plano para corrigir',required=False)
 parser.add_argument('--pops', dest='pops', type=str, help='Criar plano para corrigir',required=False)
-parser.add_argument('--nas', dest='nas', type=str, help='Criar plano para corrigir',required=False)
+parser.add_argument('--nas', dest='nas_id', type=int, help='ID do NAS',required=False)
 parser.add_argument('--vencimentoadd', dest='vencimentoadd', type=str, help='Criar vencimento para corrigir',required=False)
 parser.add_argument('--setores', dest='setores', type=str, help='chamado setores',required=False)
 parser.add_argument('--chamadoassuntos', dest='chamadoassuntos', type=str, help='chamado assuntos',required=False)
@@ -46,9 +46,14 @@ parser.add_argument('--anotacoes', dest='anotacoes', type=str, help='anotacoes',
 parser.add_argument('--usuarios', dest='usuarios', type=str, help='usuarios',required=False)
 parser.add_argument('--arquivos', dest='arquivos', type=str, help='arquivos',required=False)
 parser.add_argument('--nf2122', dest='nf2122', type=str,help='importar nf21/22', required=False)
-#python import_ispfy.py --settings=sgp.avance.settings --caixas=ispfy-caixas.csv.utf8 --planos=ispfy-planos.csv.utf8 --portadores=ispfy-portadores.csv.utf8
-#python import_ispfy.py --settings=sgp.avance.settings  --nas=1  --clientes=ispfy-clientes.csv.utf8 --portador=1 --sync=1
-#python import_ispfy.py --settings=sgp.avance.settings --titulos=ispfy-titulos.csv.utf8 
+
+'''
+python import_ispfy.py --settings=sgp.redebrasil.settings --portadores=ispfy-portadores.csv.utf8
+python import_ispfy.py --settings=sgp.redebrasil.settings --caixas=ispfy-caixas.csv.utf8
+python import_ispfy.py --settings=sgp.redebrasil.settings --planos=ispfy-planos.csv.utf8
+python import_ispfy.py --settings=sgp.redebrasil.settings  --nas=1  --clientes=ispfy-clientes.csv.utf8 --portador=1 --sync=1
+python import_ispfy.py --settings=sgp.redebrasil.settings --titulos=ispfy-titulos.csv.utf8 --sync=1
+'''
 
 args = parser.parse_args()
 
@@ -108,6 +113,12 @@ if args.portadores:
                 new_portador.cedente='PROVEDOR X'
                 new_portador.cpfcnpj = '0'
                 new_portador.save()
+
+                new_pontorecebimento = fmodels.PontoRecebimento()
+                new_pontorecebimento.descricao = row[1]
+                new_pontorecebimento.portador = new_portador
+                new_pontorecebimento.empresa = admmodels.Empresa.objects.all()[0]
+                new_pontorecebimento.save()
 
             if fmodels.GatewayPagamento.objects.filter(portadores__id=row[0]).count() == 0:
                 if row[12] in ['boleto_facil','fortunus','juno','widepay']:
@@ -189,21 +200,21 @@ if args.planos:
                 new_plano_internet.diasparabloqueio = 15
                 new_plano_internet.save() 
 
-if args.nas:
-    with open(args.nas, 'rb') as csvfile:
-        conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
-        for row in conteudo:
-            if nmodels.NAS.objects.filter(id=row[0]).count() == 0:
-                print row
-                new_nas = nmodels.NAS()
-                #new_nas.id=row[0]
-                new_nas.shortname=row[2]
-                new_nas.secret = row[3]
-                new_nas.xuser= row[5]
-                new_nas.xtype = 'mikrotik'
-                new_nas.xpassword = row[6]
-                new_nas.nasname= row[1]
-                new_nas.save()
+# if args.nas:
+#     with open(args.nas, 'rb') as csvfile:
+#         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
+#         for row in conteudo:
+#             if nmodels.NAS.objects.filter(id=row[0]).count() == 0:
+#                 print row
+#                 new_nas = nmodels.NAS()
+#                 #new_nas.id=row[0]
+#                 new_nas.shortname=row[2]
+#                 new_nas.secret = row[3]
+#                 new_nas.xuser= row[5]
+#                 new_nas.xtype = 'mikrotik'
+#                 new_nas.xpassword = row[6]
+#                 new_nas.nasname= row[1]
+#                 new_nas.save()
 
 
 
@@ -230,7 +241,7 @@ if args.arquivos:
                         pass
 
 if args.clientes:
-    nas = nmodels.NAS.objects.all()[0]
+    nas = nmodels.NAS.objects.get(pk=args.nas_id)
     formacobranca = fmodels.FormaCobranca.objects.all()[0]
 
     m = manage.Manage()

@@ -4,7 +4,7 @@ from datetime import date, datetime
 from django.db import transaction
 import csv
 
-file = '/tmp/beesweb-gnet.csv'
+file = '/tmp/ispfy-gnet.csv'
 PORTADOR = 2
 
 sgpuser = User.objects.get(username="sgp")

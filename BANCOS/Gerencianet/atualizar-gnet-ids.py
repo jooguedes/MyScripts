@@ -23,7 +23,7 @@ usuario = authmodels.User.objects.get(username='sgp')
 formapagamento = fmodels.FormaPagamento.objects.all()[0]
 planocontas = fmodels.CentrodeCusto.objects.get(codigo='01.01.01')
 
-path = '/tmp/beesweb-gnet.csv'
+path = '/tmp/ispfy-gnet.csv'
 PORTADOR = 2
 
 def strdate(d):

@@ -1056,11 +1056,3 @@ if args.notatitulo :
                 nft.notafiscal = nf[0]
                 nft.save()
                 print("Essa é a NF e o Titulo ", nf[0],titulo[0])
-
-
-
-
-
-
-
-

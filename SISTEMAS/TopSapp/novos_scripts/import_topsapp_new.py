@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from datetime import date, datetime
+from unicodedata import normalize
+from decimal import Decimal
 import argparse
 import os, sys
-import csv
-from datetime import date, datetime
 import copy
-from unicodedata import normalize
+import csv
 import re
 
 parser = argparse.ArgumentParser(description='Importação XLS 1')
@@ -31,17 +32,18 @@ args = parser.parse_args()
 
 #####################################################################################################################################
 #                                                                                                                                   #
-#               Arquivos do backup: fornecedores, suportes, suporte_categorias, portadores e suporte_msg                            #
+#               Arquivos do backup: suportes, suporte_categorias, portadores e suporte_msg                                          #
 #                                                                                                                                   #
 #####################################################################################################################################
 
 
 '''
-python import_topsapp.py --settings=sgp.pgitelecom.settings --portadores= 
-python import_topsapp.py --settings=sgp.pgitelecom.settings --nas=1 --pop=1 --portador=1 --vencimentoadd=1 --planoadd=1 --clientes= --sync=1
-python import_topsapp.py --settings=sgp.pgitelecom.settings --suportescategorias= --suportes= --suportesmsg=
-python import_topsapp.py --settings=sgp.pgitelecom.settings --fornecedor= 
-python import_topsapp.py --settings=sgp.pgitelecom.settings --nf2122= --titulos=
+python import_topsapp.py --settings=sgp.blessed.settings --portadores=topsapp-portadores.csv
+python import_topsapp.py --settings=sgp.blessed.settings --nas=1 --pop=1 --portador=1 --vencimentoadd=1 --planoadd=1 --clientes=topsapp-clientes.csv --sync=1
+python import_topsapp.py --settings=sgp.blessed.settings --suportescategorias=topsapp-suporte_categorias.csv --suportes=topsapp-suporte.csv --suportesmsg=topsapp-suportes_mensagens.csv
+python import_topsapp.py --settings=sgp.blessed.settings --titulos=topsapp-titulos-all.csv
+python import_topsapp.py --settings=sgp.blessed.settings --fornecedor=topsapp-fornecedores.csv
+python import_topsapp.py --settings=sgp.blessed.settings --nf2122= --titulos=
 '''
 
 
@@ -51,6 +53,9 @@ id_portadores = 5
 id_nas = 0
 id_fornecedores = 0
 id_ocorrencias = 0
+
+
+idservico_isnull = 5000
 
 PATH_APP = '/usr/local/sgp'
 
@@ -171,6 +176,12 @@ if args.portadores:
                 new_portador.cpfcnpj = '0'
                 new_portador.save()
 
+                new_pontorecebimento = fmodels.PontoRecebimento()
+                new_pontorecebimento.descricao = row[1]
+                new_pontorecebimento.portador = new_portador
+                new_pontorecebimento.empresa = admmodels.Empresa.objects.all()[0]
+                new_pontorecebimento.save()
+
 if args.clientes:
 
     nas_default = nmodels.NAS.objects.get(pk=args.nas_id)
@@ -182,10 +193,15 @@ if args.clientes:
         for row in conteudo:
 
             idcliente = int(row[0])
-            idservico = int(row[58])
+            try:
+                idservico = int(row[58])
+            except:
+                idservico = idcliente + idservico_isnull
 
-            login=ustrl(row[1])
-            login = normalize('NFKD', unicode(login)).encode('ASCII','ignore')
+
+            login=row[1]
+            if login.strip() == '':
+                login = 'SEM_LOGIN_%s'%idservico
             if row[43]:
                 senha=row[43]
             else:
@@ -206,7 +222,11 @@ if args.clientes:
             naturalidade = '-'.join(row[51:53])
             ie = row[53]
             im = row[54]
-            cliobs = '%s \n %s'%(row[55], row[61])
+            try:
+                cliobs = '%s \n %s'%(row[55], row[61])
+            except:
+                cliobs = row[55]
+
             senhacentral = row[56]
             obstec = row[57]
 
@@ -618,6 +638,113 @@ if args.clientes:
                 new_servico.save()
 
                 m.addRadiusServico(new_servico)
+
+
+if args.titulos and not args.nf2122:
+    with open(args.titulos, 'rb') as csvfile:
+        conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
+        for row in conteudo:
+            #print row[1].split('@')[0].strip().lower()
+            try:
+                #servico = admmodels.ServicoInternet.objects.get(login__splitdomain__trim__lower=row[1].split('@')[0].strip().lower())
+                servico = admmodels.ServicoInternet.objects.filter(clientecontrato__cliente__id=row[0])[0]
+            except:
+                continue
+            #nnumero += 1
+            #ndoc += 1
+            contrato = servico.clientecontrato
+            cobranca = contrato.cobranca
+            cliente = contrato.cliente
+            descricao = row[5]
+            #if nosso_numero == '0':
+            #nosso_numero = tf.getNossoNumero(portador) + 1
+            #y,m,d=row[6].split("-")
+            data_documento =row[6]
+            data_vencimento = row[7].strip()
+            data_pagamento = row[8].strip()
+            if data_pagamento == '':
+                data_pagamento = None
+                data_baixa = None 
+                status = fmodels.MOVIMENTACAO_GERADA
+                usuario_b = None 
+            else:
+                status =  fmodels.MOVIMENTACAO_PAGA
+                usuario_b = usuario 
+                data_baixa = data_pagamento 
+                data_pagamento = data_pagamento
+            numero_documento = row[9]
+            nosso_numero = row[10]
+            nosso_numero_f = row[10]
+            #if nosso_numero == 'gerencianet':
+            #    continue
+            #else:
+            #    nosso_numero = row[10][2:]
+            #if not nosso_numero:
+            #    nosso_numero = '%s' %(str(24900000010000000 + int(numero_documento)))
+            #    nosso_numero = nosso_numero[2:]
+            #nosso_numero_f = row[10]
+            valor = row[19]
+            if len(valor.split('.')) > 2:
+                valor = ''.join(valor.split('.',1))
+            valorpago = row[12]
+            if not valorpago:
+                valorpago = None 
+            else:
+                if len(valorpago.split('.')) > 2:
+                    valorpago = ''.join(valorpago.split('.',1))
+            desconto_vencimento = row[20]
+            if not desconto_vencimento:
+                desconto_vencimento = Decimal('0.00')
+            desconto = 0.00
+            linha_digitavel = None
+            codigo_barras = None
+            try:
+                portador = fmodels.Portador.objects.filter(id=row[20])
+            except:
+                continue
+            if not portador:
+                print(row[20],'nao achei portador')
+            else:
+                portador = portador[0]
+            if nosso_numero and portador:
+                dados = {'cliente': cliente,
+                        'cobranca': cobranca,
+                        'portador': portador,
+                        'formapagamento': fmodels.FormaPagamento.objects.all()[0],
+                        'centrodecusto': fmodels.CentrodeCusto.objects.get(codigo='01.01.01'),
+                        'modogeracao': 'l',
+                        'usuario_g': usuario,
+                        'usuario_b': usuario_b,
+                        'demonstrativo': descricao,
+                        'data_documento': data_documento,
+                        'data_alteracao': data_documento,
+                        'data_vencimento': data_vencimento,
+                        'data_pagamento': data_pagamento,
+                        'desconto_venc': desconto_vencimento,
+                        'data_baixa': data_baixa,
+                        'numero_documento': numero_documento,
+                        'nosso_numero': nosso_numero,
+                        'nosso_numero_f': nosso_numero_f,
+                        'linha_digitavel': linha_digitavel,
+                        'codigo_barras': codigo_barras,
+                        'valor': valor,
+                        'valorpago': valorpago,
+                        'desconto': desconto,
+                        'status': status,
+                        }
+                print (dados)
+                try:
+                    if fmodels.Titulo.objects.filter(portador=portador,nosso_numero=nosso_numero).count() == 0:
+                        try:
+                            titulo = fmodels.Titulo(**dados)
+                            titulo.data_documento=data_documento
+                            titulo.save()
+                        except:
+                            continue
+                except:
+                    continue
+
+
 
 if args.suportescategorias:
     with open(args.suportescategorias, 'rb') as csvfile:

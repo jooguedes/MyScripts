@@ -60,18 +60,20 @@ FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
 
 -- PLANOS
 SELECT DISTINCT 
-	b.BAN_CODIGO        ,
-	b.BAN_BANDA         ,
-	b.BAN_DESCRICAO     ,
-	b.BAN_DESCRICAO2    ,
+	m.MEN_CODIGO        ,
+	m.EMP_DOMINIO       ,
 	m.MEN_DESCRICAO     ,
 	m.MEN_VALOR         ,
-	m.MEN_MENSAGEM      ,
-	m.MEN_VAL_ADICIONAL ,
 	m.MEN_DESCONTOS     ,
-	m.MEN_STATUS 
-FROM banda b 
-LEFT JOIN mensalidade m ON (m.BAN_CODIGO = b.BAN_CODIGO)
+	m.MEN_VAL_ADICIONAL ,
+	m.MEN_STATUS        ,
+	m.MEN_MENSAGEM      ,
+	b.BAN_DESCRICAO     ,
+	b.BAN_DESCRICAO2    ,
+	b.BAN_BANDA         ,
+	b.BAN_BANDA2 
+FROM mensalidade m 
+INNER JOIN banda b ON (m.BAN_CODIGO = b.BAN_CODIGO)
 INTO OUTFILE '/tmp/scut-planos.csv' CHARACTER SET utf8
 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
 
@@ -82,6 +84,7 @@ SELECT DISTINCT
 	c.CLI_SENHA                   ,
 	c.CLI_CGC                     ,
 	c.CLI_CPF                     ,
+	c.CLI_INSCRICAO               ,
 	c.CLI_TIPO                    ,
 	c.CLI_NOME                    ,
 	c.CLI_ENDERECO                ,
@@ -93,7 +96,7 @@ SELECT DISTINCT
 	c.CLI_COMPLEMENTO             ,
 	c.CLI_LAT                     ,
 	c.CLI_LONG                    ,
-	c.CLI_DIATARI                 ,
+	c.CLI_DIATARI as vencimento   ,
 	c.CLI_FONE                    ,
 	c.CLI_FAX                     ,
 	c.CLI_CELULAR                 ,
@@ -105,19 +108,23 @@ SELECT DISTINCT
 	c.CLI_ATIVACAO                ,
 	c.CLI_BLOQUEADO               ,
 	c.CLI_SUSPENSO                ,
+	c.CLI_DTCANCELAMENTO          ,
 	c.CLI_OBS                     ,
 	c.CLI_MAC                     ,
 	c.CLI_IP                      ,
 	c.CLI_OBS_CONTRATO            ,
 	c.CLI_CHAVE_CENTRAL           ,
-	c.BAN_CODIGO as CODIGO_PLANO  ,
+	cm.MEN_CODIGO as plano_id     ,
 	c.CLI_MEIO                    ,
 	c.TIPO_CLIENTE                ,
 	mm.MOV_DESC                   ,
 	mm.MOV_DATA                   ,
-	c.TOR_CODIGO
+	c.TOR_CODIGO as pop_id        ,
+	c.CLI_BOLETO                  ,
+	c.BAN_CODIGO as portador_id
 FROM clientes2 c 
 LEFT JOIN movimento_material mm ON (mm.CLI_LOGIN = c.CLI_LOGIN)
+LEFT JOIN clientes_mensalidade cm ON (cm.CLI_LOGIN = c.CLI_LOGIN)
 INTO OUTFILE '/tmp/scut-clientes.csv' CHARACTER SET utf8
 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
 
@@ -125,7 +132,7 @@ FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
 -- BOLETOS
 SELECT DISTINCT 
 	b.bid                 ,
-	b.bnid                ,
+	b.bnid as carteira_id ,
 	b.banco               ,
 	b.titulo              ,
 	b.conta_cedente       ,
@@ -150,11 +157,12 @@ SELECT DISTINCT
 	b.status              ,
 	b.situacao            ,
 	b.CLI_DIATARI         ,
-	b.parcela 
+	b.parcela             ,
+	bc.BAN_CODIGO as banco_id
 FROM boletos2 b 
+LEFT JOIN bancobranca bc ON (bc.BNID = b.bnid)
 INTO OUTFILE '/tmp/scut-titulos.csv' CHARACTER SET utf8
 FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
-
 
 -- CONTAS A PAGAR
 SELECT DISTINCT 
@@ -260,15 +268,8 @@ FIELDS TERMINATED BY '|' OPTIONALLY ENCLOSED BY '"' LINES TERMINATED BY '\n';
 
 
 
-
-
-
-
-
-
-
-
-
+-- for i in $(ls *.csv); do iconv -f iso8859-1 -t utf-8 $i > $i.utf8; rm $i; done
+-- sed -i "s/\\\N//g" *.csv.utf8
 
 
 

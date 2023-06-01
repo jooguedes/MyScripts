@@ -1,21 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-from django.conf import settings
 from django.core.wsgi import get_wsgi_application
-import argparse
-from nis import cat
-import os
-import sys
-from datetime import date, datetime
-import copy
-from unicodedata import normalize
-import csv
-import re
-from decimal import Decimal
-import codecs
 from warnings import catch_warnings
+from datetime import date, datetime
+from unicodedata import normalize
+from django.conf import settings
+from decimal import Decimal
+from nis import cat
+import argparse
+import codecs
 import shutil
+import copy
+import sys
+import csv
+import os
+import re
+
 
 parser = argparse.ArgumentParser(description='Importação XLS 1')
 parser.add_argument('--settings', dest='settings', type=str, help='settings django', required=True)
@@ -23,8 +23,9 @@ parser.add_argument('--sync', dest='sync_db', type=bool, help='Sync Database', d
 parser.add_argument('--empresas', dest='empresas', type=str, help='Arquivo importacao', required=False)
 parser.add_argument('--pops', dest='pops', type=str, help='Arquivo importacao', required=False)
 parser.add_argument('--portadores', dest='portadores', type=str, help='Arquivo importacao', required=False)
+parser.add_argument('--planos', dest='planos', type=str, help='Arquivo importacao', required=False)
 parser.add_argument('--clientes', dest='clientes', type=str, help='Arquivo importacao', required=False)
-parser.add_argument('--boletos', dest='boletos', type=str, help='Arquivo importacao', required=False)
+parser.add_argument('--titulos', dest='titulos', type=str, help='Arquivo importacao', required=False)
 parser.add_argument('--contaapagar', dest='contaapagar', type=str, help='Arquivo importacao', required=False)
 parser.add_argument('--suportes', dest='suportes', type=str, help='Arquivo importacao', required=False)
 parser.add_argument('--notasfiscais', dest='notasfiscais', type=str, help='Arquivo importacao', required=False)
@@ -36,18 +37,18 @@ parser.add_argument('--nas', dest='nas_id', type=int, help='ID NAS', required=Fa
 
 
 '''
-EMPRESAS, POPS, PORTADORES, PLANOS, CLIENTES, BOLETOS, CONTAS A PAGAR, SUPORTES, NOTAS FISCAIS 1 e 2, USUARIOS, HISTORICO DO CLIENTE
-python import_ixc.py --settings=sgp.local.settings --empresas=scut-empresas.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --pops=scut-pops.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --portadores=scut-portadores.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --planos=scut-planos.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --clientes=scut-clientes.csv.utf8 --nas= --portador= --pop=
-python import_ixc.py --settings=sgp.local.settings --boletos=scut-boletos.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --contaapagar=scut-contaapagar.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --suportes=scut-suportes.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --notasfiscais=scut-notasfiscais.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --usuarios=scut-usuarios.csv.utf8
-python import_ixc.py --settings=sgp.local.settings --historicocliente=scut-historicocliente.csv.utf8
+EMPRESAS, POPS, PORTADORES, PLANOS, CLIENTES, TITULOS, CONTAS A PAGAR, SUPORTES, NOTAS FISCAIS 1 e 2, USUARIOS, HISTORICO DO CLIENTE
+python import_scut.py --settings=sgp.local.settings --empresas=scut-empresas.csv.utf8
+python import_scut.py --settings=sgp.local.settings --pops=scut-pops.csv.utf8
+python import_scut.py --settings=sgp.local.settings --portadores=scut-portadores.csv.utf8
+python import_scut.py --settings=sgp.local.settings --planos=scut-planos.csv.utf8
+python import_scut.py --settings=sgp.local.settings --clientes=scut-clientes.csv.utf8 --nas=1 --portador=74 --pop=1 --sync=1
+python import_scut.py --settings=sgp.local.settings --titulos=scut-titulos.csv.utf8
+python import_scut.py --settings=sgp.local.settings --contaapagar=scut-contaapagar.csv.utf8
+python import_scut.py --settings=sgp.local.settings --suportes=scut-suportes.csv.utf8
+python import_scut.py --settings=sgp.local.settings --notasfiscais=scut-notasfiscais.csv.utf8
+python import_scut.py --settings=sgp.local.settings --usuarios=scut-usuarios.csv.utf8
+python import_scut.py --settings=sgp.local.settings --historicocliente=scut-historicocliente.csv.utf8
 '''
 
 args = parser.parse_args()
@@ -85,9 +86,6 @@ usuario = admmodels.User.objects.get(username='sgp')
 formacobranca = fmodels.FormaCobranca.objects.all()[0]
 contrato_obj = admmodels.Contrato.objects.filter(grupo__nome__icontains='Cabo').order_by('-id')[0]
 grupo_obj = admmodels.Grupo.objects.filter(nome__icontains='Cabo').order_by('-id')[0]
-if args.portador:
-    portador = fmodels.Portador.objects.get(id=args.portador)
-
 
 def convertdata(d):
     try:
@@ -103,7 +101,7 @@ if args.empresas:
         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
         for row in conteudo:
             new_empresa = admmodels.Empresa()
-            new_empresa.id = int(row[0])
+            new_empresa.id = row[0]
             new_empresa.razaosocial = ustr(row[2])
             new_empresa.nomefantasia = ustr(row[3])
             new_empresa.cpfcnpj = row[13]
@@ -111,7 +109,7 @@ if args.empresas:
             new_empresa.data_cadastro = datetime.now()
             new_empresa.logradouro = row[4]
             new_empresa.cep = row[12]
-            new_empresa.numero = fnum(row[8])
+            new_empresa.numero = fnum(row[5])
             if fnum(row[5]) == '':
                 new_empresa.numero = None
             new_empresa.complemento = row[6]
@@ -154,12 +152,12 @@ if args.portadores:
                 if row[3].strip() == '':
                     new_portador.descricao = 'BANCO_%s'%row[0]
                 new_portador.codigo_banco = '999'
-                new_portador.agencia = row[5] or '0'
+                new_portador.agencia = fnum(row[5]) or '0'
                 new_portador.agencia_dv = ''
                 new_portador.conta = row[6] or '0'
                 new_portador.conta_dv = ''
                 new_portador.convenio = row[7]
-                new_portador.carteira = row[10]
+                new_portador.carteira = fnum(row[10])[:5]
                 new_portador.cedente = 'PROVEDOR X'
                 new_portador.cpfcnpj = '0'
                 new_portador.instrucoes1 = row[11]
@@ -167,61 +165,94 @@ if args.portadores:
                 new_portador.instrucoes3 = row[13]
                 new_portador.instrucoes4 = row[14]
                 new_portador.instrucoes5 = row[15]
-                new_portador.save()
+                try:
+                    new_portador.save()
+                    print(new_portador)
 
-                new_pontorecebimento = fmodels.PontoRecebimento()
-                new_pontorecebimento.descricao = row[3]
-                if row[3].strip() == '':
-                    new_pontorecebimento.descricao = 'BANCO_%s'%row[0]
-                new_pontorecebimento.portador = new_portador
-                new_pontorecebimento.empresa = admmodels.Empresa.objects.all()[0]
-                new_pontorecebimento.save()
+                    new_pontorecebimento = fmodels.PontoRecebimento()
+                    new_pontorecebimento.descricao = row[3]
+                    if row[3].strip() == '':
+                        new_pontorecebimento.descricao = 'BANCO_%s'%row[0]
+                    new_pontorecebimento.portador = new_portador
+                    new_pontorecebimento.empresa = admmodels.Empresa.objects.all()[0]
+                    try:
+                        new_pontorecebimento.save()
+                        print(new_pontorecebimento)
+                    except Exception as e:
+                        print('Erro ao cadastrar novo PONTO DE RECEBIMENTO, erro: ', e)
+                        break
+                except Exception as e:
+                    print('Erro ao cadastrar novo PORTADOR, erro: ', e)
+                    break
 
 if args.planos:
     with open(args.planos, 'rb') as csvfile:
         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
         for row in conteudo:
-            if admmodels.Plano.objects.filter(descricao=row[0]).count() == 0:
+            if admmodels.Plano.objects.filter(id=row[0]).count() == 0:
                 print(row)
                 new_plano = admmodels.Plano()
                 new_plano.id = row[0]
-                new_plano.descricao = row[4]
-                new_plano.preco = row[5]
+                new_plano.descricao = row[2]
+                try:
+                    new_plano.preco = Decimal(row[3])
+                except:
+                    new_plano.preco = 0.00
                 new_plano.grupo = grupo_obj
                 new_plano.contrato = contrato_obj
-                new_plano.desconto_venc = row[8]
-                new_plano.anotacoes = row[6]
+                try:
+                    new_plano.desconto_venc = Decimal(row[4])
+                except:
+                    new_plano.desconto_venc = 0.00
+                new_plano.anotacoes = row[7]
+                if row[8].strip() != '':
+                    new_plano.anotacoes += '\n'+row[8]
+                if row[9].strip() != '':
+                    new_plano.anotacoes += '\n'+row[9]
                 new_plano.data_cadastro = datetime.now()
-                new_plano.save()
-                new_plano_internet = admmodels.PlanoInternet()
-                new_plano_internet.id = row[0]
-                new_plano_internet.plano = new_plano
                 try:
-                    new_plano_internet.download = int(row[1].split('/')[0])
-                except:
-                    new_plano_internet.download = 204800
-                try:
-                    new_plano_internet.upload = int(row[1].split('/')[1])
-                except:
-                    new_plano_internet.upload = 204800
-                new_plano_internet.data_cadastro = datetime.now()
-                if 'EXCLUIDO' in row[9]:
-                    new_plano_internet.active = False
-                new_plano_internet.save()
+                    new_plano.save()
+                    print(new_plano)
+
+                    new_plano_internet = admmodels.PlanoInternet()
+                    new_plano_internet.id = row[0]
+                    new_plano_internet.plano = new_plano
+                    try:
+                        if row[10].strip() != '':
+                            new_plano_internet.download = int(row[10].split('/')[0])
+                        else:
+                            new_plano_internet.download = int(row[11].split('/')[0])
+                    except:
+                        new_plano_internet.download = 0
+                    try:
+                        if row[10].strip() != '':
+                            new_plano_internet.upload = int(row[10].split('/')[1])
+                        else:
+                            new_plano_internet.upload = int(row[11].split('/')[1])
+                    except:
+                        new_plano_internet.upload = 0
+                    new_plano_internet.data_cadastro = datetime.now()
+                    if 'EXCLUIDO' in row[6]:
+                        new_plano_internet.active = False
+                    try:
+                        new_plano_internet.save()
+                        print(new_plano_internet)
+                    except Exception as e:
+                        print('Erro ao salvar PLANO INTERNET, erro: ', e)
+                except Exception as e:
+                    print('Erro ao salvar PLANO, erro: ', e)
+                    break
+            else:
+                print('ID do plano já existe: ', row)
+
+
+                
 
 if args.clientes:
     formacobranca = fmodels.FormaCobranca.objects.all()[0]
     nas_default = nmodels.NAS.objects.get(pk=args.nas_id)
-    portador = fmodels.Portador.objects.get(pk=args.portador_id)
+    portador_default = fmodels.Portador.objects.get(pk=args.portador_id)
     pop_default = admmodels.Pop.objects.get(pk=args.pop_id)
-
-    ri = -1
-
-    incrementar = admmodels.ClienteContrato.objects.all().aggregate(Max('id')).get('id__max') or 10000
-    if incrementar < 10000:
-        incrementar = 10000
-    else:
-        incrementar += 1
 
     m = manage.Manage()
     with open(args.clientes, 'rb') as csvfile:
@@ -232,56 +263,79 @@ if args.clientes:
             cpfcnpj = row[3]
             if cpfcnpj.strip() == '' or len(cpfcnpj) < 10:
                 cpfcnpj = row[4]
-            nome = row[6]
-            logradouro = row[7]
-            pontoreferencia = row[8]
-            cidade = row[9]
-            uf = row[10]
-            bairro = row[11]
-            cep = row[12]
-            complemento = row[13]
-            map_ll = '%s, %s'%(row[14], row[15])
-            numero = fnum(logradouro.split()[-1])
+            try:
+                rgie = row[5].strip().split()[0]
+                rg_emissor = row[5].strip().split()[-1]
+            except:
+                rgie = row[5]
+                rg_emissor = ''
+            inscricao = fnum(rgie)
+            nome = row[7]
+            logradouro = row[8]
+            pontoreferencia = row[9]
+            cidade = row[10]
+            uf = row[11]
+            bairro = row[12]
+            cep = row[13]
+            complemento = row[14]
+            map_ll = '%s, %s'%(row[15], row[16])
+            try:
+                numero = fnum(logradouro.split()[-1])
+            except:
+                numero = None
             if numero == '':
                 numero = None
-            vencimento = row[16]
+            vencimento = row[17]
             if vencimento.strip() == '':
                 vencimento = 10
-            telefone = row[17]
-            telefonecom = row[18]
-            celular = row[19]
-            data_nasc = row[22]
+            telefone = row[18]
+            telefonecom = row[19]
+            celular = row[20]
+            gerar_nf = True if row[21].strip() == 'S' else False
+            data_nasc = row[23]
             if data_nasc.strip() == '':
                 data_nasc = None
-            data_cadastro = row[23]
+            data_cadastro = row[24]
             if data_cadastro.strip() == '':
                 data_cadastro = datetime.now()
-            data_ativacao = row[25]
+            data_ativacao = row[26]
             if data_ativacao.strip() == '':
                 data_ativacao = data_cadastro
-            cliente_obs = row[28]
-            mac = row[29]
-            ip = row[30]
+
+            data_bloqueio = row[27]
+            data_suspensao = row[28]
+            data_cancelamento = row[29]
+
+            cliente_obs = row[30]
+            mac = row[31]
+            ip = row[32]
             if len(ip) < 7: ip = None
             if len(mac) < 10: mac = None
-            plano_id = row[33]
-            if row[34].strip() != '':
+            contrato_obs = row[34]
+            if len(contrato_obs.strip()) < 5:
+                contrato_obs = None
+            try:
+                plano_id = int(row[35])
+                if plano_id == 0:
+                    plano_id = 53
+            except:
+                plano_id = 53
+            
+            if row[36].strip() != '':
                 try:
-                    contrato_obj = admmodels.Contrato.objects.filter(grupo__nome=row[34]).order_by('-id')[0]
+                    contrato_obj = admmodels.Contrato.objects.filter(grupo__nome=row[36]).order_by('-id')[0]
                 except:
                     contrato_obj = admmodels.Contrato.objects.filter(grupo__nome='fibra').order_by('-id')[0]
                 try:
-                    grupo_obj = admmodels.Grupo.objects.filter(nome=row[34]).order_by('-id')[0]
+                    grupo_obj = admmodels.Grupo.objects.filter(nome=row[36]).order_by('-id')[0]
                 except:
                     grupo_obj = admmodels.Grupo.objects.filter(nome='fibra').order_by('-id')[0]
-            if row[37].strip() != '':
+            if row[39].strip() != '':
                 comodato = True
-                comodato_obs = row[36]
+                comodato_obs = row[38]
             else:
                 comodato = False
                 comodato_obs = ''
-
-            rgie = ''
 
             sexo = None
 
@@ -293,33 +347,40 @@ if args.clientes:
             status_s = 1
             status_c = 1
 
-            if row[27].strip() != '':
+            if len(data_bloqueio.strip()) > 5 or len(data_suspensao.strip()) > 5:
                 status_cc = 4
                 status_s = 4
                 status_c = 4
 
-            if row[26].strip() != '':
+            if len(data_cancelamento.strip()) > 5:
                 status_cc = 3
                 status_s = 3
                 status_c = 3
 
             nas = nas_default
             try:
-                pop = admmodels.Pop.objects.get(pk=row[38])
+                pop = int(row[40])
+                if pop != 0:
+                    pop = admmodels.Pop.objects.get(pk=row[38])
+                else:
+                    pop = pop_default
             except:
                 pop = pop_default
 
             try:
                 fmodels.Vencimento.objects.get(dia=vencimento)
             except:
-                print("erro vencimento %s" %vencimento)
-                if args.vencimentoadd:
-                    print('corrigindo vencimento %s' %vencimento)
-                    new_vencimento = fmodels.Vencimento()
-                    new_vencimento.dia = vencimento
-                    new_vencimento.save()
-            
-            planointernet = admmodels.PlanoInternet.objects.get(id=row[33])
+                print('corrigindo vencimento %s' %vencimento)
+                new_vencimento = fmodels.Vencimento()
+                new_vencimento.dia = vencimento
+                new_vencimento.save()
+            planointernet = admmodels.PlanoInternet.objects.get(id=plano_id)
+
+            try:
+                portador = fmodels.Portador.objects.get(pk=row[42])
+            except Exception as e:
+                print('Portador não encontrador, portador_id', row[42])
+                portador = portador_default
 
             print (nome,cpfcnpj,len(cpfcnpj),sexo, data_cadastro,data_nasc)
             print (logradouro,numero or '',complemento,bairro,cidade,uf,cep)
@@ -372,7 +433,7 @@ if args.clientes:
                         new_pessoa.nacionalidade = 'BR'
                         new_pessoa.rg = rgie
                         new_pessoa.cpfcnpj = cpfcnpj
-                        new_pessoa.rg_emissor=''
+                        new_pessoa.rg_emissor=rg_emissor
                         try:
                             new_pessoa.save()
                         except:
@@ -391,7 +452,7 @@ if args.clientes:
                         new_pessoa.nomefantasia = nome
                         new_pessoa.resempresa = ''
                         new_pessoa.cpfcnpj = cpfcnpj
-                        new_pessoa.insc_estadual = ''
+                        new_pessoa.insc_estadual = inscricao
                         new_pessoa.tipo = 8
                         new_pessoa.save()
 
@@ -462,13 +523,18 @@ if args.clientes:
                 new_cobranca.portador = portador
                 new_cobranca.vencimento = fmodels.Vencimento.objects.get(dia=vencimento)
                 new_cobranca.isento = isento
-                new_cobranca.notafiscal = False
+                new_cobranca.notafiscal = gerar_nf
                 new_cobranca.data_cadastro = data_cadastro
                 new_cobranca.datacobranca1 = data_cadastro
                 new_cobranca.usuariocad = usuario
                 new_cobranca.formacobranca = formacobranca
                 new_cobranca.status = status_c
-                new_cobranca.save()
+                try:
+                    new_cobranca.save()
+                except Exception as e:
+                    print('Erro ao cadastrar COBRANÇA, erro: ', e)
+                    break
+
 
                 new_cobranca.data_cadastro = data_cadastro
                 new_cobranca.save()
@@ -545,18 +611,267 @@ if args.clientes:
 
             
 
-if args.boletos:
-    with open(args.boletos, 'rb') as csvfile:
+if args.titulos:
+    with open(args.titulos, 'rb') as csvfile:
         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
         for row in conteudo:
+            login = row[13]
+
+            if login:
+                #login = normalize('NFKD', unicode(login)).encode('ASCII','ignore') 
+                print(login)
+
+            try:
+                try:
+                    servico = admmodels.ServicoInternet.objects.get(login__lower=login.strip().lower())
+                except Exception as e:
+                    print('nao achei login %s : %s' %(login,e))
+                    continue
+                contrato = servico.clientecontrato
+                cobranca = contrato.cobranca
+                cliente = contrato.cliente
+                demosntrativo = '%s\n%s\n%s\n%s\n%s\n'%(row[8], row[9], row[10], row[11], row[12])
+                nosso_numero_f = None
+                data_documento = row[14]
+                data_vencimento = row[16]
+                data_pagamento = row[15]
+                valor = row[17]
+                valorpago = None
+                data_cancela = None
+                try:
+                    portador = fmodels.Portador.objects.get(id=row[26])
+                except:
+                    print(row[26])
+                    try:
+                        portador = fmodels.Portador.objects.get(descricao='COBRANCA INFORMAL')
+                    except:
+                        new_portador = fmodels.Portador()
+                        new_portador.descricao = 'COBRANCA INFORMAL'
+                        new_portador.codigo_banco = '999'
+                        new_portador.cedente = 'PROVEDOR X'
+                        new_portador.cpfcnpj = '0'
+                        new_portador.save()
+
+                        new_pontorecebimento = fmodels.PontoRecebimento()
+                        new_pontorecebimento.descricao = 'COBRANCA INFORMAL'
+                        new_pontorecebimento.portador = new_portador
+                        new_pontorecebimento.empresa = admmodels.Empresa.objects.all()[0]
+                        new_pontorecebimento.save()
+                        portador = new_portador
+
+                if data_pagamento == '':
+                    data_pagamento = None
+                    data_baixa = None 
+                    status = fmodels.MOVIMENTACAO_GERADA
+                    usuario_b = None 
+                else:
+                    status =  fmodels.MOVIMENTACAO_PAGA
+                    usuario_b = usuario 
+                    data_baixa = data_pagamento 
+                    valorpago = row[22]
+
+                numero_documento = int(row[3]) 
+                nosso_numero = numero_documento
+                desconto_venc = row[19]                
+                desconto = 0.00
+                linha_digitavel = ''
+                codigo_barras = ''
+
+                if data_baixa and data_baixa.startswith('0000-00-00') and valorpago is not None:
+                    data_baixa = data_vencimento
+                    data_pagamento = data_vencimento
+
+                if nosso_numero:
+                    if fmodels.Titulo.objects.filter(nosso_numero=nosso_numero,portador=portador).count() == 0:
+                        dados = {'cliente': cliente,
+                                'cobranca': cobranca,
+                                'portador': portador,
+                                'formapagamento': fmodels.FormaPagamento.objects.all()[0],
+                                'centrodecusto': fmodels.CentrodeCusto.objects.get(codigo='01.01.01'),
+                                'modogeracao': 'l',
+                                'usuario_g': usuario,
+                                'usuario_b': usuario,
+                                'demonstrativo': demosntrativo,
+                                'data_documento': data_documento,
+                                'data_alteracao': data_documento,
+                                'data_vencimento': data_vencimento,
+                                'data_cancela': data_cancela,
+                                'data_pagamento': data_pagamento,
+                                'data_baixa': data_baixa,
+                                'numero_documento': numero_documento,
+                                'nosso_numero': nosso_numero,
+                                'nosso_numero_f': nosso_numero_f,
+                                'linha_digitavel': linha_digitavel,
+                                'codigo_barras': codigo_barras,
+                                'valor': valor,
+                                'valorpago': valorpago,
+                                'desconto': desconto,
+                                'status': status
+                                }
+                        #print dados
+                        print("Importando boleto",cliente,nosso_numero,data_vencimento,portador)
+                        try:
+                            titulo = fmodels.Titulo(**dados)
+                            titulo.save()
+                            nosso_numero_f = titulo.getNossoNumero()
+                            if nosso_numero_f:
+                                titulo.nosso_numero_f = re.sub('[^0-9A-Z]', '', nosso_numero_f) 
+                            titulo.data_documento=data_documento
+                            titulo.data_alteracao=data_documento
+                            titulo.save()
+                            titulo.updateDadosFormatados()
+                        except Exception as e:
+                            print("Erro cadastrar",e,dados)
+            except Exception as a:
+                print(a)
             
 
             
 
 if args.suportes:
+    cdtipo = 300
+    cdmotivo = 300
+
+    max_tipo = amodels.Tipo.objects.all().order_by('-id')[0]
+    if max_tipo.codigo > 200:
+        cdtipo = max_tipo.codigo + 1
+    max_motivo = amodels.MotivoOS.objects.all().order_by('-id')[0]
+    if max_motivo.codigo > 200:
+        cdmotivo = max_motivo.codigo + 1
+
+    metodo = amodels.Metodo.objects.all()[0]
+
+    def format_data(n):
+        try:
+            date = n.strip().split()[0]
+            time = n.strip().split()[1]
+            d_,m_,y_ = date.split('/')
+            return '%s-%s-%s %s'%(y_,m_,d_, time)
+        except:
+            return n
     with open(args.suportes, 'rb') as csvfile:
         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
         for row in conteudo:
+            protocolo = row[0]
+            if len(protocolo) > 14:
+                protocolo = protocolo[0:13]
+            login = row[2].strip().lower()
+            assunto = 'Ocorrência importada'
+            status = row[16]
+            data_cadastro = row[4]
+            data_agendamento = row[8]
+            data_finalizacao = row[14]
+            conteudo = row[6]
+            if conteudo == "" or conteudo is None:
+                conteudo = "Campo conteúdo vazio no MK-AUTH."
+            servicoprestado = row[13]
+
+            servico = admmodels.ServicoInternet.objects.filter(login__trim__lower=login)
+
+            if servico:
+                clientecontrato = servico[0].clientecontrato
+                tipo_obj = amodels.Tipo.objects.filter(descricao=assunto)
+                motivo_obj = amodels.MotivoOS.objects.filter(descricao=assunto)
+
+                if tipo_obj:
+                    tipo_obj = tipo_obj[0]
+                else:
+                    tipo_obj = amodels.Tipo()
+                    tipo_obj.codigo=cdtipo
+                    tipo_obj.descricao=assunto[:99]
+                    tipo_obj.save()
+                    cdtipo += 1
+
+                if motivo_obj:
+                    motivo_obj = motivo_obj[0]
+                else:
+                    motivo_obj = amodels.MotivoOS()
+                    motivo_obj.codigo=cdmotivo
+                    motivo_obj.descricao=assunto
+                    try:
+                        motivo_obj.save()
+                        cdmotivo += 1
+                    except:
+                        continue
+
+                if amodels.Ocorrencia.objects.filter(numero=protocolo).count() == 0:
+                    print(row)
+                    ocorrencia = {}
+                    ocorrencia['clientecontrato'] = clientecontrato
+                    ocorrencia['tipo'] = tipo_obj
+                    ocorrencia['usuario'] = usuario
+                    ocorrencia['metodo'] = metodo
+                    ocorrencia['numero'] = protocolo
+                    ocorrencia['status'] = amodels.OCORRENCIA_ENCERRADA if status == 'F' else amodels.OCORRENCIA_ABERTA
+                    ocorrencia['responsavel'] = ocorrencia['usuario']
+
+                    ocorrencia['data_cadastro'] = data_cadastro
+                    if str(ocorrencia['data_cadastro']) in ['0000-00-00 00:00:00','0000-00-00','00:00:00', '']:
+                        ocorrencia['data_cadastro'] = datetime.now()
+                    ocorrencia['data_agendamento'] = data_agendamento
+                    ocorrencia['data_finalizacao'] = data_finalizacao
+                    ocorrencia['conteudo'] = conteudo
+                    for ok in ocorrencia:
+                        if ocorrencia[ok] in['0000-00-00 00:00:00','0000-00-00','00:00:00', '']:
+                            ocorrencia[ok] = None
+
+                    new_ocorrencia = amodels.Ocorrencia(**ocorrencia)
+                    new_ocorrencia.save()
+
+                    new_ocorrencia.data_cadastro = data_cadastro
+                    new_ocorrencia.data_agendamento = data_agendamento
+                    new_ocorrencia.data_finalizacao = data_finalizacao
+
+                    if str(new_ocorrencia.data_agendamento) in ['0000-00-00 00:00:00','0000-00-00','00:00:00', '']:
+                        new_ocorrencia.data_agendamento = None
+                    if str(new_ocorrencia.data_finalizacao) in ['0000-00-00 00:00:00','0000-00-00','00:00:00', '']:
+                        new_ocorrencia.data_finalizacao = None
+                    if str(new_ocorrencia.data_cadastro) in ['0000-00-00 00:00:00','0000-00-00','00:00:00', '']:
+                        new_ocorrencia.data_cadastro = datetime.now()
+                    try:
+                        new_ocorrencia.save()
+                    except:
+                        new_ocorrencia.data_agendamento = None
+                        new_ocorrencia.data_finalizacao = None
+                        new_ocorrencia.data_cadastro = datetime.now()
+
+
+                    ordem = {}
+                    ordem['ocorrencia'] = new_ocorrencia
+                    ordem['status'] = amodels.OS_ENCERRADA if status == 'F' else amodels.OS_ABERTA
+                    ordem['usuario'] = usuario
+                    ordem['motivoos'] = motivo_obj
+                    ordem['data_cadastro'] = ocorrencia['data_cadastro']
+                    ordem['data_agendamento'] = ocorrencia['data_agendamento']
+                    ordem['data_finalizacao'] = ocorrencia['data_finalizacao']
+                    ordem['conteudo'] = ocorrencia['conteudo']
+
+                    for oser in ordem:
+                        if ordem[oser] in ['0000-00-00 00:00:00','0000-00-00']:
+                            ordem[oser] = None
+
+                    new_ordem = amodels.OS(**ordem)
+                    new_ordem.save()
+                    new_ordem.data_cadastro = ocorrencia['data_cadastro']
+                    new_ordem.data_agendamento = ocorrencia['data_agendamento']
+                    new_ordem.data_finalizacao = ocorrencia['data_finalizacao']
+                    if str(new_ordem.data_agendamento) in ['0000-00-00 00:00:00','0000-00-00','']:
+                        new_ordem.data_agendamento = None
+                    if str(new_ordem.data_finalizacao) in ['0000-00-00 00:00:00','0000-00-00','']:
+                        new_ordem.data_agendamento = None
+                    try:
+                        new_ordem.save()
+                    except:
+                        new_ordem.data_cadastro = datetime.now()
+                        new_ordem.data_agendamento = None
+                        new_ordem.data_finalizacao = None
+
+                    if servicoprestado != '':
+                        new_ocorrencia_anotacao= amodels.OcorrenciaAnotacao()
+                        new_ocorrencia_anotacao.ocorrencia=amodels.Ocorrencia.objects.get(numero=protocolo)
+                        new_ocorrencia_anotacao.anotacao=servicoprestado
+                        new_ocorrencia_anotacao.usuario= usuario
+                        new_ocorrencia_anotacao.save()
 
             
 
@@ -566,12 +881,9 @@ if args.contaapagar:
         for row in conteudo:
             try:
                 dados = {}
-                try:
-                    dados['fornecedor'] = fmodels.Fornecedor.objects.get(pk=int(row[2]))
-                except:
-                    dados['fornecedor'] = None
 
-                dados['descricao'] = row[11][:100]
+                dados['fornecedor'] = None
+                dados['descricao'] = row[2]+row[3]
                 dados['valor'] = row[5]
                 if fnum(row[5]) == '':
                     dados['valor'] = 0.00
@@ -580,9 +892,9 @@ if args.contaapagar:
                     dados['centrodecusto'] = fmodels.CentrodeCusto.objects.get(id=50)
                 except:
                     continue
-                dados['data_emissao'] = row[7]
-                dados['data_cadastro'] = row[6]
-                dados['data_alteracao'] = row[6]
+                dados['data_emissao'] = row[1]
+                dados['data_cadastro'] = row[1]
+                dados['data_alteracao'] = row[1]
                 dados['usuario'] = usuario
 
                 print(dados)
@@ -597,13 +909,13 @@ if args.contaapagar:
                 dadosparcela['valor'] = dados['valor']
                 dadosparcela['parcela'] = 1
                 dadosparcela['status'] = fmodels.PAGAR_STATUS_PENDENTE
-                if Decimal(row[22]) > Decimal('0.00'):
+                if row[7].strip() != '':
                     dadosparcela['status'] = fmodels.PAGAR_STATUS_QUITADO
-                    dadosparcela['data_pagamento'] = row[21]
-                    dadosparcela['valor_pago'] = row[22]
+                    dadosparcela['data_pagamento'] = row[7]
+                    dadosparcela['valor_pago'] = row[5]
                     if fnum(row[22]) == '':
                         dadosparcela['valor_pago'] = 0.00
-                dadosparcela['data_vencimento'] = row[8]
+                dadosparcela['data_vencimento'] = dados['data_cadastro']
                 dadosparcela['data_cadastro'] = dados['data_cadastro']
                 dadosparcela['juros'] = 0
                 dadosparcela['multa'] = 0
@@ -772,25 +1084,27 @@ if args.usuarios:
                 new_usuario.save()
 
             
-if args.historico:
-    with open(args.historico, 'rb') as csvfile:
+if args.historicocliente:
+    with open(args.historicocliente, 'rb') as csvfile:
         conteudo = csv.reader(csvfile, delimiter='|', quotechar='"')
         for row in conteudo:
-            clientecontrato = admmodels.ClienteContrato.objects.filter(
-                id=row[0])
+            clientecontrato = admmodels.ClienteContrato.objects.filter(servicointernet__login__lower=row[4].lower())
             if clientecontrato:
                 cliente_id = clientecontrato[0].cliente.id
-                usuario_set = usuario
+                try:
+                    usuario_set = admmodels.User.objects.get(name=row[2])
+                except:
+                    usuario_set = usuario
 
                 dados = {}
                 dados['model_name'] = 'cliente'
                 dados['app_label'] = 'admcore'
                 dados['object_id'] = cliente_id
                 dados['user'] = usuario_set
-                dados['history'] = row[1]
+                dados['history'] = row[3]
                 if not row[2]:
                     continue
-                dados['date_created'] = row[2]
+                dados['date_created'] = row[1]
                 print dados
                 h = admmodels.History(**dados)
                 h.save()

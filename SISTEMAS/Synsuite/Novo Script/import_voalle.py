@@ -33,14 +33,14 @@ parser.add_argument('--ocorrencias', dest='ocorrencias', type=str, help='Arquivo
 parser.add_argument('--notasfiscais', dest='notasfiscais', type=str, help='Arquivo importacao', required=False)
 
 '''
-python import_synsuit.py --settings=sgp.local.settings --empresas=synsuit-empresas.csv
-python import_synsuit.py --settings=sgp.local.settings --portadores=synsuit-portadores.csv
-python import_synsuit.py --settings=sgp.local.settings --clientes=synsuit-clientes.csv --pop= --nas= --portador= --sync=
-python import_synsuit.py --settings=sgp.local.settings --titulos=synsuit-titulos-areceber.csv
-python import_synsuit.py --settings=sgp.local.settings --fornecedores=synsuit-fornecedores.csv
-python import_synsuit.py --settings=sgp.local.settings --contasapagar=synsuit-contas-a-pagar.csv
-python import_synsuit.py --settings=sgp.local.settings --ocorrencias=synsuit-ocorrencias.csv
-python import_synsuit.py --settings=sgp.local.settings --notasfiscais=synsuit-notasfiscais.csv
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --empresas=synsuit-empresas.csv
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --portadores=synsuit-portadores.csv
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --clientes=synsuit-clientes.csv --pop=1 --nas=1 --portador=7 --sync=
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --titulos=synsuit-titulos-areceber.csv --sync=
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --fornecedores=synsuit-fornecedores.csv
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --contasapagar=synsuit-contas-a-pagar.csv
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --ocorrencias=synsuit-ocorrencias.csv
+python import_synsuit.py --settings=sgp.clicknettelecomms.settings --notasfiscais=synsuit-notasfiscais.csv
 '''
 
 args = parser.parse_args()
@@ -109,8 +109,8 @@ if args.empresas:
         for row in conteudo:
             new_empresa = admmodels.Empresa()
             new_empresa.id = int(row[0])
-            new_empresa.razaosocial = ustr(row[4])
-            new_empresa.nomefantasia = ustr(row[3])
+            new_empresa.razaosocial = row[4]
+            new_empresa.nomefantasia = row[3]
             new_empresa.cpfcnpj = row[5]
             new_empresa.telefone1 = row[14]
             new_empresa.data_cadastro = row[16].split()[0]
@@ -266,8 +266,8 @@ if args.clientes:
                 plano_upload = 51200
                 plano_download = 102400
 
-            login = row[64]
-            senha = row[65]
+            login = row[63]
+            senha = row[64]
             if login.strip() == '' and status in ['4', '9']:
                 login = 'CLIENTE_CANCELADO_%s'%(id_contrato)
                 senha = '123'
@@ -659,7 +659,6 @@ if args.titulos:
 
 
                     if nosso_numero:
-                        print('entrei no nosso numero')
                         if fmodels.Titulo.objects.filter(nosso_numero=nosso_numero,portador=portador).count() == 0:
                             dados = {'cliente': cliente,
                                     'cobranca': cobranca,

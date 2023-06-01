@@ -4,10 +4,10 @@ from apps.cauth import models as authmodels
 from datetime import date, datetime
 import csv
 
-ID_PORTADOR = 3
+ID_PORTADOR = 16
 CANCELAR = False
-VENCIMENTO_DE = '2018-01-01'
-VENCIMENTO_ATE = '2029-08-31'
+VENCIMENTO_DE = '2023-06-10'
+VENCIMENTO_ATE = '2029-12-31'
 NOME_ARQUIVO = 'lista_boletos_cancelados_juno.csv'
 
 usuario = authmodels.User.objects.get(username='sgp')
@@ -34,7 +34,7 @@ if CANCELAR:
                                     .update(status=fmodels.MOVIMENTACAO_CANCELADA,
                                             usuario_c=usuario,
                                             data_cancela=date.today(),
-                                            motivocancela="Boleto cancelado mediante ocorrência importação-protocolo: 230421120402, autorizaddo pelo Sr(a). Marcos A Silva.")
+                                            motivocancela="Boleto cancelado mediante ocorrência importação-protocolo: 230527110500, autorizaddo pelo Sr(a). Evaristo Damasceno.")
 
 print(url)
 

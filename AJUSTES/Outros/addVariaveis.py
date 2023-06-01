@@ -6,7 +6,7 @@ usuario = admmodels.User.objects.get(username='sgp')
 #COORDENADAS = '-12.9704,-38.5124'
 COORDENADAS = ''
 # adcionar url sem '/' no final
-URL = 'https://wendor.sgp.tsmx.com.br/'
+URL = 'https://clicknettelecomms.sgp.tsmx.com.br/'
 # Apenas para SGPs instalados em máquinas locais
 NOME_PROVEDOR = ''
 

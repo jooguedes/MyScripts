@@ -41,7 +41,8 @@ inner join banks b on (ba.bank_id = b.id)
 where ba.deleted = 'f'
 ) TO '/tmp/synsuit-portadores.csv' DELIMITER '|' csv;
 
--- CLIENTES
+
+-- CLIENTES ATIVADOS
 copy (
 select distinct 
 	p.id                           ,
@@ -135,9 +136,108 @@ inner join contracts c on (c.client_id = p.id)
 left join financers_natures fn2 on (fn2.id = c.financer_nature_id)
 inner join contract_items ci on (ci.contract_id = c.id)
 inner join service_products sp on (ci.service_product_id = sp.id)
-left join authentication_contracts ac on (ac.contract_id = c.id)
+inner join authentication_contracts ac on (ac.contract_item_id = ci.id)
 where p.deleted = 'f' and c.deleted = 'f'
-) TO '/tmp/synsuit-clientes.csv' DELIMITER '|' csv;
+) TO '/tmp/synsuit-clientes-ativos.csv' DELIMITER '|' csv;
+
+-- CLIENTES DESATIVADOS
+copy (
+select distinct 
+	p.id                           ,
+	p.situation                    ,
+	p.type_tx_id                   ,
+	p.tx_id                        ,
+	p."name"                       ,
+	p.name_2                       ,
+	-- Endereço do cliente
+	p.postal_code                  ,
+	p.street                       ,
+	p.street_type                  ,
+	p."number"                     ,
+	p.address_complement           ,
+	p.neighborhood                 ,
+	p.city                         ,
+	p.code_city_id                 ,
+	p.state                        ,
+	p.lat                          ,
+	p.lng                          ,
+	p.address_reference            ,
+	p.status                       ,
+	p.client                       ,
+	-- Endereco de cobranca 
+	p.financier_postal_code        ,
+	p.financier_street             ,
+	p.financier_number             ,
+	p.financier_address_complement ,
+	p.financier_neighborhood       ,
+	p.financier_city               ,
+	p.financier_code_city_id       ,
+	p.financier_state              ,
+	p.financier_address_reference  ,
+	fn.title                       ,
+	p.email                        ,
+	p."email_NFE"                  ,
+	pg.title                       ,
+	pg.description                 ,
+	p."identity" as rgie           ,
+	p.birth_date as dt_nascimento  ,
+	p.parents_name as mae          ,
+	p.administrative_observation   ,
+	p.created as dt_cadastro       ,
+	p.modified                     ,
+	p.phone                        ,
+	p.commercial_phone             ,
+	p.fax_phone                    ,
+	p.cell_phone_1                 ,
+	p.cell_phone_2                 ,
+	p.observ                       ,
+	p.observ2                      ,
+	c.id as id_contrato            ,
+	c.company_place_id             ,
+	c.description                  ,
+	c."date"                       ,
+	c.observation                  ,
+	c.collection_day as vencimento ,
+	c.status                       ,
+	c.cancellation_date            ,
+	c.cancellation_motive          ,
+	c.end_date                     ,
+	fn2.description                ,
+	ci.total_amount as valor_plano ,
+	sp.title                       ,
+	sp.description                 ,
+	sp.upload_max_limit            ,
+	sp.download_max_limit          ,
+	ac."user"  as login            ,
+	ac."password"  as senha        ,
+	ac.port_olt                    ,
+	ac.slot_olt                    ,
+	ac.equipment_serial_number     ,
+	-- Endereco de servico
+	ac.postal_code                 ,
+	ac.street_number               ,
+	ac.neighborhood                ,
+	ac.street                      ,
+	ac.city                        ,
+	ac.state                       ,
+	ac.address_complement          ,
+	ac.reference                   ,
+	ac.lat                         ,
+	ac.lng                         ,
+	ac.complement as obs_service   ,
+	ac.authentication_ip           ,
+	ac.mac
+from people p
+left join financers_natures fn on (fn.id = p.financier_nature_id)
+left join people_groups pg on (pg.id = p.people_group_id)
+inner join contracts c on (c.client_id = p.id)
+left join financers_natures fn2 on (fn2.id = c.financer_nature_id)
+inner join contract_items ci on (ci.contract_id = c.id)
+inner join service_products sp on (ci.service_product_id = sp.id)
+left join authentication_contracts ac on (ac.contract_item_id = ci.id)
+where p.deleted = 'f' and c.deleted = 'f' and c.status in ('9', '4')
+) TO '/tmp/synsuit-clientes-desativados.csv' DELIMITER '|' csv;
+
 
 -- TITULOS
 copy (
@@ -366,3 +466,8 @@ left join financial_collection_types fct on (fct.id = in2.financial_collection_t
 left join payment_conditions pc on (pc.id = in2.payment_condition_id)
 left join invoice_note_items ini on (ini.invoice_note_id = in2.id)
 ) TO '/tmp/synsuit-notasfiscais.csv' DELIMITER '|' csv;
+
+
+-- cp /tmp/synsuit-* .
+-- sed -i "s/\\\N//g" *.csv
+-- for i in $(ls *.csv); do iconv -f iso8859-1 -t utf-8 $i > $i.utf8;  done 

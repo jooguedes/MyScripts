@@ -59,7 +59,7 @@ echo "" >> create
 
 
 
-for i in clientes.csv fornecedores.csv servicos.csv servicos_clientes.csv servicos_clientes_acesso.csv planos.csv cidades.csv vencimentos.csv receber.csv portadores.csv; do cp $i /tmp; done 
+for i in clientes.csv.utf8 fornecedores.csv.utf8 servicos.csv.utf8 servicos_clientes.csv.utf8 servicos_clientes_acesso.csv.utf8 planos.csv.utf8 cidades.csv.utf8 vencimentos.csv.utf8 receber.csv.utf8 portadores.csv.utf8 fornecedores.csv.utf8 cfop.csv.utf8 nf21.csv.utf8 nf21_itens.csv.utf8; do cp $i /tmp; done 
 
 COPY clientes FROM '/tmp/clientes.csv.utf8' DELIMITER ',' CSV;
 COPY servicos FROM '/tmp/servicos.csv.utf8' DELIMITER ',' CSV;
@@ -197,7 +197,7 @@ f.uf,
 f.numero,
 f.email
 FROM fornecedores f
-INNER JOIN cidades cd ON (cd.id=f.cidade)
+LEFT JOIN cidades cd ON (cd.id=f.cidade)
 ORDER BY f.id ) TO '/tmp/topsapp-fornecedores.csv' DELIMITER '|' CSV;
 
 
